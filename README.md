@@ -22,7 +22,7 @@ Run the server directly with npx:
 KOMODO_URL="https://komodo.example.com" \
 KOMODO_API_KEY="your-api-key" \
 KOMODO_API_SECRET="your-api-secret" \
-npx @samik081/mcp-komodo
+npx -y @samik081/mcp-komodo
 ```
 
 The server validates your Komodo connection on startup and fails immediately with a clear error if credentials are missing or invalid.
@@ -36,7 +36,7 @@ claude mcp add --transport stdio komodo \
   --env KOMODO_URL=https://komodo.example.com \
   --env KOMODO_API_KEY=your-api-key \
   --env KOMODO_API_SECRET=your-api-secret \
-  -- npx @samik081/mcp-komodo
+  -- npx -y @samik081/mcp-komodo
 ```
 
 **JSON config** (works with Claude Code `.mcp.json`, Claude Desktop `claude_desktop_config.json`, Cursor `.cursor/mcp.json`):
@@ -46,7 +46,7 @@ claude mcp add --transport stdio komodo \
   "mcpServers": {
     "komodo": {
       "command": "npx",
-      "args": ["@samik081/mcp-komodo"],
+      "args": ["-y", "@samik081/mcp-komodo"],
       "env": {
         "KOMODO_URL": "https://komodo.example.com",
         "KOMODO_API_KEY": "your-api-key",
