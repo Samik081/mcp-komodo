@@ -40,6 +40,9 @@
     "url": "https://github.com/samik081/mcp-komodo/issues"
   },
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
     "komodo_client": "^1.19.5",
