@@ -33,11 +33,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/samik081/mcp-komodo.git"
+    "url": "git+https://github.com/Samik081/mcp-komodo.git"
   },
-  "homepage": "https://github.com/samik081/mcp-komodo#readme",
+  "homepage": "https://github.com/Samik081/mcp-komodo#readme",
   "bugs": {
-    "url": "https://github.com/samik081/mcp-komodo/issues"
+    "url": "https://github.com/Samik081/mcp-komodo/issues"
   },
   "license": "MIT",
   "publishConfig": {
