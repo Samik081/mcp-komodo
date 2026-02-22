@@ -1,7 +1,7 @@
 /**
- * Stack domain tools: list, get, log, deploy, lifecycle, destroy.
+ * Stack domain tools: list, get, log, inspect, deploy, lifecycle, destroy.
  *
- * Registers 6 MCP tools for Komodo Stack resources.
+ * Registers 7 MCP tools for Komodo Stack resources.
  * A Stack is a multi-container deployment defined by a Docker Compose file,
  * deployed to a specific server.
  */
@@ -173,6 +173,40 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
           `getting logs for stack '${stack}'`,
           error,
         );
+      }
+    },
+  });
+
+  // -------------------------------------------------------------------------
+  // komodo_inspect_stack_container
+  // -------------------------------------------------------------------------
+  registerTool(server, config, {
+    name: "komodo_inspect_stack_container",
+    description:
+      "Inspect a Docker container for a specific service within a Stack. " +
+      "Returns the full container state including configuration, mounts, " +
+      "network settings, and runtime status (equivalent to docker inspect).",
+    accessTier: "read-only",
+    category: "stacks",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      stack: z.string().describe("Stack name or ID"),
+      service: z.string().describe("Service name within the stack to inspect"),
+    },
+    handler: async (args) => {
+      const stack = args.stack as string;
+      const service = args.service as string;
+      try {
+        const container = await client.read("InspectStackContainer", { stack, service });
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(container, null, 2) }],
+        };
+      } catch (error) {
+        return handleKomodoError(`inspecting container for service '${service}' in stack '${stack}'`, error);
       }
     },
   });

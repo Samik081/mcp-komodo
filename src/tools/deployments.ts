@@ -1,7 +1,7 @@
 /**
- * Deployment domain tools: list, get, log, deploy, lifecycle, destroy.
+ * Deployment domain tools: list, get, log, inspect, deploy, lifecycle, destroy.
  *
- * Registers 6 MCP tools for Komodo Deployment resources.
+ * Registers 7 MCP tools for Komodo Deployment resources.
  * A Deployment is a single Docker container managed by Komodo,
  * deployed to a specific server.
  */
@@ -169,6 +169,38 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
           `getting logs for deployment '${deployment}'`,
           error,
         );
+      }
+    },
+  });
+
+  // -------------------------------------------------------------------------
+  // komodo_inspect_deployment_container
+  // -------------------------------------------------------------------------
+  registerTool(server, config, {
+    name: "komodo_inspect_deployment_container",
+    description:
+      "Inspect the Docker container associated with a Deployment. " +
+      "Returns the full container state including configuration, mounts, " +
+      "network settings, and runtime status (equivalent to docker inspect).",
+    accessTier: "read-only",
+    category: "deployments",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      deployment: z.string().describe("Deployment name or ID"),
+    },
+    handler: async (args) => {
+      const deployment = args.deployment as string;
+      try {
+        const container = await client.read("InspectDeploymentContainer", { deployment });
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(container, null, 2) }],
+        };
+      } catch (error) {
+        return handleKomodoError(`inspecting container for deployment '${deployment}'`, error);
       }
     },
   });
