@@ -1,7 +1,7 @@
 /**
- * Server domain tools: list, get, stats, info+processes, Docker prune, Docker delete.
+ * Server domain tools: list, get, stats, info+processes, Docker inspect, Docker prune, Docker delete.
  *
- * Registers 6 MCP tools for Komodo Server resources.
+ * Registers 10 MCP tools for Komodo Server resources.
  * A Server is a remote machine managed by Komodo's Periphery agent.
  */
 
@@ -176,6 +176,142 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
           `getting info for server '${serverParam}'`,
           error,
         );
+      }
+    },
+  });
+
+  // -------------------------------------------------------------------------
+  // komodo_inspect_docker_container
+  // -------------------------------------------------------------------------
+  registerTool(server, config, {
+    name: "komodo_inspect_docker_container",
+    description:
+      "Inspect a Docker container on a Komodo Server. Returns the full " +
+      "container state including configuration, mounts, network settings, " +
+      "and runtime status (equivalent to docker inspect).",
+    accessTier: "read-only",
+    category: "servers",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      server: z.string().describe("Server name or ID"),
+      container: z.string().describe("Container name or ID"),
+    },
+    handler: async (args) => {
+      const serverParam = args.server as string;
+      const container = args.container as string;
+      try {
+        const result = await client.read("InspectDockerContainer", { server: serverParam, container });
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error) {
+        return handleKomodoError(`inspecting container '${container}' on server '${serverParam}'`, error);
+      }
+    },
+  });
+
+  // -------------------------------------------------------------------------
+  // komodo_inspect_docker_image
+  // -------------------------------------------------------------------------
+  registerTool(server, config, {
+    name: "komodo_inspect_docker_image",
+    description:
+      "Inspect a Docker image on a Komodo Server. Returns the full image " +
+      "metadata including layers, configuration, labels, and creation info " +
+      "(equivalent to docker image inspect).",
+    accessTier: "read-only",
+    category: "servers",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      server: z.string().describe("Server name or ID"),
+      image: z.string().describe("Image name or ID (e.g., nginx:latest)"),
+    },
+    handler: async (args) => {
+      const serverParam = args.server as string;
+      const image = args.image as string;
+      try {
+        const result = await client.read("InspectDockerImage", { server: serverParam, image });
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error) {
+        return handleKomodoError(`inspecting image '${image}' on server '${serverParam}'`, error);
+      }
+    },
+  });
+
+  // -------------------------------------------------------------------------
+  // komodo_inspect_docker_network
+  // -------------------------------------------------------------------------
+  registerTool(server, config, {
+    name: "komodo_inspect_docker_network",
+    description:
+      "Inspect a Docker network on a Komodo Server. Returns the full " +
+      "network configuration including driver, IPAM settings, connected " +
+      "containers, and options (equivalent to docker network inspect).",
+    accessTier: "read-only",
+    category: "servers",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      server: z.string().describe("Server name or ID"),
+      network: z.string().describe("Network name or ID"),
+    },
+    handler: async (args) => {
+      const serverParam = args.server as string;
+      const network = args.network as string;
+      try {
+        const result = await client.read("InspectDockerNetwork", { server: serverParam, network });
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error) {
+        return handleKomodoError(`inspecting network '${network}' on server '${serverParam}'`, error);
+      }
+    },
+  });
+
+  // -------------------------------------------------------------------------
+  // komodo_inspect_docker_volume
+  // -------------------------------------------------------------------------
+  registerTool(server, config, {
+    name: "komodo_inspect_docker_volume",
+    description:
+      "Inspect a Docker volume on a Komodo Server. Returns the full " +
+      "volume metadata including driver, mount point, labels, and options " +
+      "(equivalent to docker volume inspect).",
+    accessTier: "read-only",
+    category: "servers",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      server: z.string().describe("Server name or ID"),
+      volume: z.string().describe("Volume name"),
+    },
+    handler: async (args) => {
+      const serverParam = args.server as string;
+      const volume = args.volume as string;
+      try {
+        const result = await client.read("InspectDockerVolume", { server: serverParam, volume });
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error) {
+        return handleKomodoError(`inspecting volume '${volume}' on server '${serverParam}'`, error);
       }
     },
   });

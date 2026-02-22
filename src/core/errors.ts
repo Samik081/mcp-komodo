@@ -59,7 +59,12 @@ export function handleKomodoError(
   context: string,
   error: unknown,
 ): McpErrorResponse {
-  const rawMessage = error instanceof Error ? error.message : String(error);
+  const rawMessage =
+    error instanceof Error
+      ? error.message
+      : typeof error === "object" && error !== null
+        ? JSON.stringify(error)
+        : String(error);
   const safeMessage = sanitizeMessage(rawMessage);
   return {
     content: [{ type: "text", text: `Error ${context}: ${safeMessage}` }],
