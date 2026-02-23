@@ -1,4 +1,5 @@
 [![npm version](https://img.shields.io/npm/v/@samik081/mcp-komodo)](https://www.npmjs.com/package/@samik081/mcp-komodo)
+[![Docker image](https://ghcr-badge.egpl.dev/samik081/mcp-komodo/latest_tag?trim=major&label=docker)](https://ghcr.io/samik081/mcp-komodo)
 [![License: MIT](https://img.shields.io/npm/l/@samik081/mcp-komodo)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/node/v/@samik081/mcp-komodo)](https://nodejs.org)
 
@@ -14,6 +15,8 @@ MCP server for the [Komodo](https://komo.do) DevOps platform. Manage servers, st
 - **Three access tiers** (`read-only`, `read-execute`, `full`) for granular control
 - **Category filtering** via `KOMODO_CATEGORIES` to expose only the tools you need
 - **Zero HTTP dependencies** -- uses the official `komodo_client` SDK
+- **Docker images** for `linux/amd64` and `linux/arm64` on [GHCR](https://ghcr.io/samik081/mcp-komodo)
+- **Remote MCP** via HTTP transport (`MCP_TRANSPORT=http`) using the Streamable HTTP protocol
 - **TypeScript/ESM** with full type safety
 
 ## Quick Start
@@ -29,16 +32,49 @@ npx -y @samik081/mcp-komodo
 
 The server validates your Komodo connection on startup and fails immediately with a clear error if credentials are missing or invalid.
 
+### Docker
+
+Run with Docker (stdio transport, same as npx):
+
+```bash
+docker run --rm -i \
+  -e KOMODO_URL=https://komodo.example.com \
+  -e KOMODO_API_KEY=your-api-key \
+  -e KOMODO_API_SECRET=your-api-secret \
+  ghcr.io/samik081/mcp-komodo
+```
+
+To run as a remote MCP server with HTTP transport:
+
+```bash
+docker run -d -p 3000:3000 \
+  -e MCP_TRANSPORT=http \
+  -e KOMODO_URL=https://komodo.example.com \
+  -e KOMODO_API_KEY=your-api-key \
+  -e KOMODO_API_SECRET=your-api-secret \
+  ghcr.io/samik081/mcp-komodo
+```
+
+The MCP endpoint is available at `http://localhost:3000/mcp` and a health check at `http://localhost:3000/health`.
+
 ## Configuration
 
 **Claude Code CLI (recommended):**
 
 ```bash
+# Using npx
 claude mcp add --transport stdio komodo \
   --env KOMODO_URL=https://komodo.example.com \
   --env KOMODO_API_KEY=your-api-key \
   --env KOMODO_API_SECRET=your-api-secret \
   -- npx -y @samik081/mcp-komodo
+
+# Using Docker
+claude mcp add --transport stdio komodo \
+  --env KOMODO_URL=https://komodo.example.com \
+  --env KOMODO_API_KEY=your-api-key \
+  --env KOMODO_API_SECRET=your-api-secret \
+  -- docker run --rm -i ghcr.io/samik081/mcp-komodo
 ```
 
 **JSON config** (works with Claude Code `.mcp.json`, Claude Desktop `claude_desktop_config.json`, Cursor `.cursor/mcp.json`):
@@ -54,6 +90,37 @@ claude mcp add --transport stdio komodo \
         "KOMODO_API_KEY": "your-api-key",
         "KOMODO_API_SECRET": "your-api-secret"
       }
+    }
+  }
+}
+```
+
+**Docker (stdio):**
+
+```json
+{
+  "mcpServers": {
+    "komodo": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i",
+        "-e", "KOMODO_URL=https://komodo.example.com",
+        "-e", "KOMODO_API_KEY=your-api-key",
+        "-e", "KOMODO_API_SECRET=your-api-secret",
+        "ghcr.io/samik081/mcp-komodo"
+      ]
+    }
+  }
+}
+```
+
+**Remote MCP** (connect to a running Docker container or HTTP server):
+
+```json
+{
+  "mcpServers": {
+    "komodo": {
+      "type": "streamable-http",
+      "url": "http://localhost:3000/mcp"
     }
   }
 }
@@ -81,14 +148,17 @@ Set `KOMODO_ACCESS_TIER` to `read-only`, `read-execute`, or `full` (default: `fu
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `KOMODO_URL` | Yes | URL of your Komodo Core instance |
-| `KOMODO_API_KEY` | Yes | API key for authentication |
-| `KOMODO_API_SECRET` | Yes | API secret for authentication |
-| `KOMODO_ACCESS_TIER` | No | Access tier: `read-only`, `read-execute`, or `full` (default: `full`) |
-| `KOMODO_CATEGORIES` | No | Comma-separated category allowlist (e.g., `servers,stacks,builds`) |
-| `DEBUG` | No | Set to any value to enable debug logging to stderr |
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `KOMODO_URL` | Yes | -- | URL of your Komodo Core instance |
+| `KOMODO_API_KEY` | Yes | -- | API key for authentication |
+| `KOMODO_API_SECRET` | Yes | -- | API secret for authentication |
+| `KOMODO_ACCESS_TIER` | No | `full` | Access tier: `read-only`, `read-execute`, or `full` |
+| `KOMODO_CATEGORIES` | No | *(all)* | Comma-separated category allowlist (e.g., `servers,stacks,builds`) |
+| `DEBUG` | No | -- | Set to any value to enable debug logging to stderr |
+| `MCP_TRANSPORT` | No | `stdio` | Transport mode: `stdio` (default) or `http` |
+| `MCP_PORT` | No | `3000` | HTTP server port (only used when `MCP_TRANSPORT=http`) |
+| `MCP_HOST` | No | `0.0.0.0` | HTTP server bind address (only used when `MCP_TRANSPORT=http`) |
 
 Generate API keys in the Komodo UI under **Settings > API Keys**.
 
