@@ -1,7 +1,8 @@
 /**
- * Stack domain tools: list, get, log, inspect, deploy, lifecycle, destroy.
+ * Stack domain tools: list, get, services, summary, log, inspect, deploy,
+ * pull, lifecycle, destroy.
  *
- * Registers 7 MCP tools for Komodo Stack resources.
+ * Registers 10 MCP tools for Komodo Stack resources.
  * A Stack is a multi-container deployment defined by a Docker Compose file,
  * deployed to a specific server.
  */
@@ -15,6 +16,8 @@ import { handleKomodoError } from "../core/errors.js";
 import {
   formatStackList,
   formatStackDetail,
+  formatStackServiceList,
+  formatStacksSummary,
   formatLog,
   formatUpdateCreated,
 } from "../core/formatters.js";
@@ -212,6 +215,78 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
   });
 
   // -------------------------------------------------------------------------
+  // komodo_list_stack_services
+  // -------------------------------------------------------------------------
+  registerTool(server, config, {
+    name: "komodo_list_stack_services",
+    description:
+      "List all services in a Komodo Stack. Returns the service name, " +
+      "Docker image, container state, and whether an image update is " +
+      "available for each service in the Compose file.",
+    accessTier: "read-only",
+    category: "stacks",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      stack: z.string().describe("Stack name or ID"),
+    },
+    handler: async (args) => {
+      const stack = args.stack as string;
+      try {
+        const services = await client.read("ListStackServices", { stack });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: formatStackServiceList(services),
+            },
+          ],
+        };
+      } catch (error) {
+        return handleKomodoError(
+          `listing services for stack '${stack}'`,
+          error,
+        );
+      }
+    },
+  });
+
+  // -------------------------------------------------------------------------
+  // komodo_get_stacks_summary
+  // -------------------------------------------------------------------------
+  registerTool(server, config, {
+    name: "komodo_get_stacks_summary",
+    description:
+      "Get a summary of all Komodo Stacks. Returns aggregate counts " +
+      "by state: total, running, stopped, down, unhealthy, and unknown.",
+    accessTier: "read-only",
+    category: "stacks",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+    },
+    handler: async () => {
+      try {
+        const summary = await client.read("GetStacksSummary", {});
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: formatStacksSummary(summary),
+            },
+          ],
+        };
+      } catch (error) {
+        return handleKomodoError("getting stacks summary", error);
+      }
+    },
+  });
+
+  // -------------------------------------------------------------------------
   // komodo_deploy_stack
   // -------------------------------------------------------------------------
   registerTool(server, config, {
@@ -268,6 +343,61 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
         };
       } catch (error) {
         return handleKomodoError(`deploying stack '${stack}'`, error);
+      }
+    },
+  });
+
+  // -------------------------------------------------------------------------
+  // komodo_pull_stack
+  // -------------------------------------------------------------------------
+  registerTool(server, config, {
+    name: "komodo_pull_stack",
+    description:
+      "\u26a0\ufe0f PULL images for a Komodo Stack (docker compose pull). " +
+      "Downloads the latest images without redeploying. Use this to " +
+      "pre-pull images before a deploy, or to check for updates. " +
+      "Optionally filter to specific services.",
+    accessTier: "read-execute",
+    category: "stacks",
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      stack: z.string().describe("Stack name or ID"),
+      services: z
+        .array(z.string())
+        .optional()
+        .describe(
+          "Pull only specific services by name. If omitted or empty, " +
+            "all services are pulled.",
+        ),
+    },
+    handler: async (args) => {
+      const stack = args.stack as string;
+      const services = args.services as string[] | undefined;
+      try {
+        const update = await client.execute("PullStack", {
+          stack,
+          services: services || [],
+        });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: formatUpdateCreated(
+                update,
+                `Pulling images for stack '${stack}'`,
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        return handleKomodoError(
+          `pulling images for stack '${stack}'`,
+          error,
+        );
       }
     },
   });
