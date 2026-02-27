@@ -19,6 +19,7 @@ import { registerActionTools } from "./actions.js";
 import { registerBuilderTools } from "./builders.js";
 import { registerAlerterTools } from "./alerters.js";
 import { registerResourceSyncTools } from "./resource-syncs.js";
+import { registerUpdateTools } from "./updates.js";
 import { registerWriteTools } from "./write.js";
 
 export function registerAllTools(
@@ -37,5 +38,6 @@ export function registerAllTools(
   registerBuilderTools(server, client, config);
   registerAlerterTools(server, client, config);
   registerResourceSyncTools(server, client, config);
+  registerUpdateTools(server, client, config);
   registerWriteTools(server, client, config);
 }

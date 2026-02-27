@@ -1,7 +1,8 @@
 /**
- * Deployment domain tools: list, get, log, inspect, deploy, lifecycle, destroy.
+ * Deployment domain tools: list, get, summary, log, inspect, deploy, pull,
+ * lifecycle, destroy.
  *
- * Registers 7 MCP tools for Komodo Deployment resources.
+ * Registers 9 MCP tools for Komodo Deployment resources.
  * A Deployment is a single Docker container managed by Komodo,
  * deployed to a specific server.
  */
@@ -15,6 +16,7 @@ import { handleKomodoError } from "../core/errors.js";
 import {
   formatDeploymentList,
   formatDeploymentDetail,
+  formatDeploymentsSummary,
   formatLog,
   formatUpdateCreated,
 } from "../core/formatters.js";
@@ -206,6 +208,39 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
   });
 
   // -------------------------------------------------------------------------
+  // komodo_get_deployments_summary
+  // -------------------------------------------------------------------------
+  registerTool(server, config, {
+    name: "komodo_get_deployments_summary",
+    description:
+      "Get a summary of all Komodo Deployments. Returns aggregate counts " +
+      "by state: total, running, stopped, not deployed, unhealthy, " +
+      "and unknown.",
+    accessTier: "read-only",
+    category: "deployments",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+    },
+    handler: async () => {
+      try {
+        const summary = await client.read("GetDeploymentsSummary", {});
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: formatDeploymentsSummary(summary),
+            },
+          ],
+        };
+      } catch (error) {
+        return handleKomodoError("getting deployments summary", error);
+      }
+    },
+  });
+
+  // -------------------------------------------------------------------------
   // komodo_deploy_deployment
   // -------------------------------------------------------------------------
   registerTool(server, config, {
@@ -243,6 +278,52 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
       } catch (error) {
         return handleKomodoError(
           `deploying deployment '${deployment}'`,
+          error,
+        );
+      }
+    },
+  });
+
+  // -------------------------------------------------------------------------
+  // komodo_pull_deployment
+  // -------------------------------------------------------------------------
+  registerTool(server, config, {
+    name: "komodo_pull_deployment",
+    description:
+      "\u26a0\ufe0f PULL the image for a Komodo Deployment (docker pull). " +
+      "Downloads the latest image without redeploying the container. " +
+      "Use this to pre-pull an image before a deploy, or to check " +
+      "for updates.",
+    accessTier: "read-execute",
+    category: "deployments",
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      deployment: z.string().describe("Deployment name or ID"),
+    },
+    handler: async (args) => {
+      const deployment = args.deployment as string;
+      try {
+        const update = await client.execute("PullDeployment", {
+          deployment,
+        });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: formatUpdateCreated(
+                update,
+                `Pulling image for deployment '${deployment}'`,
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        return handleKomodoError(
+          `pulling image for deployment '${deployment}'`,
           error,
         );
       }

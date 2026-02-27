@@ -491,6 +491,110 @@ export function formatResourceSyncDetail(
 }
 
 // ---------------------------------------------------------------------------
+// Stack service formatter
+// ---------------------------------------------------------------------------
+
+export function formatStackServiceList(
+  services: Types.StackService[],
+): string {
+  if (services.length === 0) return "No services found in this stack.";
+  const lines = services.map((s) => {
+    const parts = [`- ${s.service}`];
+    if (s.image) parts.push(`image=${s.image}`);
+    if (s.container) {
+      parts.push(`state=${s.container.state}`);
+      if (s.container.status) parts.push(`status=${s.container.status}`);
+    } else {
+      parts.push("state=not running");
+    }
+    if (s.update_available) parts.push("(update available)");
+    return parts.join(" ");
+  });
+  return `Found ${services.length} service(s):\n${lines.join("\n")}`;
+}
+
+// ---------------------------------------------------------------------------
+// Summary formatters
+// ---------------------------------------------------------------------------
+
+export function formatStacksSummary(
+  summary: Types.GetStacksSummaryResponse,
+): string {
+  const lines: string[] = [
+    `Stacks summary:`,
+    `  Total: ${summary.total}`,
+    `  Running: ${summary.running}`,
+    `  Stopped: ${summary.stopped}`,
+    `  Down: ${summary.down}`,
+    `  Unhealthy: ${summary.unhealthy}`,
+    `  Unknown: ${summary.unknown}`,
+  ];
+  return lines.join("\n");
+}
+
+export function formatDeploymentsSummary(
+  summary: Types.GetDeploymentsSummaryResponse,
+): string {
+  const lines: string[] = [
+    `Deployments summary:`,
+    `  Total: ${summary.total}`,
+    `  Running: ${summary.running}`,
+    `  Stopped: ${summary.stopped}`,
+    `  Not deployed: ${summary.not_deployed}`,
+    `  Unhealthy: ${summary.unhealthy}`,
+    `  Unknown: ${summary.unknown}`,
+  ];
+  return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Update formatters
+// ---------------------------------------------------------------------------
+
+export function formatUpdateList(
+  updates: Types.UpdateListItem[],
+  nextPage?: number,
+): string {
+  if (updates.length === 0) return "No updates found.";
+  const lines = updates.map((u) => {
+    const time = new Date(u.start_ts).toISOString();
+    const status = u.status ?? "Unknown";
+    const result = status === "Complete" ? (u.success ? "OK" : "FAILED") : status;
+    return `- [${result}] ${u.operation} → ${u.target.type}/${u.target.id} (${time}, by ${u.username || u.operator}) id=${u.id}`;
+  });
+  let text = `Found ${updates.length} update(s):\n${lines.join("\n")}`;
+  if (nextPage !== undefined) {
+    text += `\n\nMore results available. Use page=${nextPage} to fetch the next page.`;
+  }
+  return text;
+}
+
+export function formatUpdateDetail(update: Types.Update): string {
+  const sections: string[] = [
+    `Operation: ${update.operation}`,
+    `Target: ${update.target.type}/${update.target.id}`,
+    `Status: ${update.status}`,
+    `Success: ${update.success}`,
+    `Operator: ${update.operator}`,
+    `Started: ${new Date(update.start_ts).toISOString()}`,
+  ];
+  if (update.end_ts) sections.push(`Ended: ${new Date(update.end_ts).toISOString()}`);
+  if (update.version) sections.push(`Version: ${formatVersion(update.version)}`);
+  if (update.commit_hash) sections.push(`Commit: ${update.commit_hash}`);
+
+  if (update.logs && update.logs.length > 0) {
+    sections.push(`\nLogs (${update.logs.length} stage(s)):`);
+    for (const log of update.logs) {
+      sections.push(`\n--- [${log.success ? "OK" : "FAILED"}] ${log.stage} ---`);
+      if (log.command) sections.push(`Command: ${log.command}`);
+      if (log.stdout) sections.push(`stdout:\n${log.stdout}`);
+      if (log.stderr) sections.push(`stderr:\n${log.stderr}`);
+    }
+  }
+  return sections.join("\n");
+}
+
+// ---------------------------------------------------------------------------
 // Log formatter
 // ---------------------------------------------------------------------------
 
@@ -499,10 +603,6 @@ export function formatLog(log: Types.Log): string {
   const header = `[${log.success ? "OK" : "FAILED"}] ${log.stage}`;
   return `${header}\n${output}`;
 }
-
-// ---------------------------------------------------------------------------
-// Update formatter
-// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Write formatters
