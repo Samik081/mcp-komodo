@@ -148,7 +148,7 @@ export function registerBuildTools(server: McpServer, client: KomodoClient, conf
     category: "builds",
     annotations: {
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
     },
     inputSchema: {
