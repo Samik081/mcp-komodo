@@ -23,6 +23,7 @@ export function registerActionTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_actions",
+    title: "List Actions",
     description:
       "List all Komodo Actions. An Action is a custom TypeScript/Deno " +
       "script that runs on the Komodo Core server. Returns name and " +
@@ -57,6 +58,7 @@ export function registerActionTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_action",
+    title: "Get Action",
     description:
       "Get detailed information about a specific Komodo Action by name " +
       "or ID. An Action is a custom TypeScript/Deno script that runs on " +
@@ -98,6 +100,7 @@ export function registerActionTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_run_action",
+    title: "Run Action",
     description:
       "\u26a0\ufe0f RUN a Komodo Action. This executes a custom TypeScript/Deno " +
       "script on the Komodo Core server. Actions can perform arbitrary " +

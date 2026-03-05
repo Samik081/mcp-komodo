@@ -28,6 +28,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_deployments",
+    title: "List Deployments",
     description:
       "List all Komodo Deployments. A Deployment is a single Docker " +
       "container managed by Komodo, deployed to a specific server. " +
@@ -64,6 +65,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_deployment",
+    title: "Get Deployment",
     description:
       "Get detailed information about a specific Komodo Deployment by " +
       "name or ID. A Deployment is a single Docker container managed by " +
@@ -108,6 +110,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_deployment_log",
+    title: "Get Deployment Log",
     description:
       "Get logs from a Komodo Deployment's Docker container. Optionally " +
       "search for specific terms in the log output. A Deployment is a " +
@@ -178,6 +181,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_inspect_deployment_container",
+    title: "Inspect Deployment Container",
     description:
       "Inspect the Docker container associated with a Deployment. " +
       "Returns the full container state including configuration, mounts, " +
@@ -210,6 +214,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_deployments_summary",
+    title: "Get Deployments Summary",
     description:
       "Get a summary of all Komodo Deployments. Returns aggregate counts " +
       "by state: total, running, stopped, not deployed, unhealthy, " +
@@ -243,6 +248,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_deploy_deployment",
+    title: "Deploy",
     description:
       "\u26a0\ufe0f DEPLOY a Komodo Deployment. This stops the current container " +
       "and starts a new one with the latest image and configuration. The " +
@@ -287,6 +293,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_pull_deployment",
+    title: "Pull Deployment Image",
     description:
       "\u26a0\ufe0f PULL the image for a Komodo Deployment (docker pull). " +
       "Downloads the latest image without redeploying the container. " +
@@ -333,6 +340,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_deployment_lifecycle",
+    title: "Manage Deployment Lifecycle",
     description:
       "\u26a0\ufe0f LIFECYCLE: Control a Komodo Deployment's container lifecycle. " +
       "A Deployment is a single Docker container managed by Komodo. " +
@@ -392,6 +400,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_destroy_deployment",
+    title: "Destroy Deployment",
     description:
       "\ud83d\udd34 DESTROY a Komodo Deployment permanently. This stops the " +
       "container and removes the deployment configuration from Komodo. " +

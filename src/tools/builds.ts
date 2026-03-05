@@ -24,6 +24,7 @@ export function registerBuildTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_builds",
+    title: "List Builds",
     description:
       "List all Komodo Builds. A Build is a Docker image build " +
       "configuration that compiles source code into container images " +
@@ -59,6 +60,7 @@ export function registerBuildTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_build",
+    title: "Get Build",
     description:
       "Get detailed information about a specific Komodo Build by name " +
       "or ID. A Build is a Docker image build configuration. Returns " +
@@ -99,6 +101,7 @@ export function registerBuildTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_run_build",
+    title: "Run Build",
     description:
       "\u26a0\ufe0f RUN a Komodo Build to create a Docker image. This clones the " +
       "repo (if needed), runs docker build, and pushes the resulting image " +
@@ -138,6 +141,7 @@ export function registerBuildTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_cancel_build",
+    title: "Cancel Build",
     description:
       "Cancel a running Komodo Build. Stops the build process if it is " +
       "currently in progress. Has no effect if the build is not running. " +

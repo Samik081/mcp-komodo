@@ -20,6 +20,7 @@ export function registerAlerterTools(server: McpServer, client: KomodoClient, co
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_alerters",
+    title: "List Alerters",
     description:
       "List all Komodo Alerters. An Alerter is a notification endpoint " +
       "(Slack, Discord, or custom webhook) for Komodo alerts and status " +
@@ -56,6 +57,7 @@ export function registerAlerterTools(server: McpServer, client: KomodoClient, co
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_alerter",
+    title: "Get Alerter",
     description:
       "Get detailed information about a specific Komodo Alerter by name " +
       "or ID. An Alerter is a notification endpoint for Komodo alerts. " +

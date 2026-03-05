@@ -21,6 +21,7 @@ export function registerContainerTools(server: McpServer, client: KomodoClient, 
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_container_log",
+    title: "Get Container Log",
     description:
       "Get logs from a Docker container running on a Komodo Server. " +
       "Requires both the server name and the container name. " +

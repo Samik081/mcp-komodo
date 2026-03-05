@@ -11,6 +11,7 @@ export interface AppConfig {
   apiSecret: string;
   accessTier: AccessTier;
   categories: string[] | null;
+  excludeToolTitles: boolean;
   debug: boolean;
   transport: 'stdio' | 'http';
   httpPort: number;
@@ -66,6 +67,8 @@ export function loadConfig(): AppConfig {
     );
   }
 
+  const excludeToolTitles = process.env.MCP_EXCLUDE_TOOL_TITLES === "true";
+
   const transport =
     process.env.MCP_TRANSPORT === 'http' ? ('http' as const) : ('stdio' as const);
   const rawPort = process.env.MCP_PORT ?? '3000';
@@ -83,6 +86,7 @@ export function loadConfig(): AppConfig {
     apiSecret: apiSecret!,
     accessTier: parseAccessTier(),
     categories: parseCategories(process.env.KOMODO_CATEGORIES),
+    excludeToolTitles,
     debug: Boolean(process.env.DEBUG),
     transport,
     httpPort,

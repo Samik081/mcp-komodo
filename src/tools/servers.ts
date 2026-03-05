@@ -26,6 +26,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_servers",
+    title: "List Servers",
     description:
       "List all Komodo Servers. A Server is a remote machine managed " +
       "by Komodo's Periphery agent. Returns name, status, and region " +
@@ -60,6 +61,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_server",
+    title: "Get Server",
     description:
       "Get detailed information about a specific Komodo Server by name " +
       "or ID. A Server is a remote machine managed by Komodo's Periphery " +
@@ -103,6 +105,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_server_stats",
+    title: "Get Server Stats",
     description:
       "Get current resource usage statistics for a Komodo Server. " +
       "A Server is a remote machine managed by Komodo's Periphery agent. " +
@@ -143,6 +146,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_server_info",
+    title: "Get Server Info",
     description:
       "Get system information and running processes for a Komodo Server. " +
       "A Server is a remote machine managed by Komodo's Periphery agent. " +
@@ -183,6 +187,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_inspect_docker_container",
+    title: "Inspect Docker Container",
     description:
       "Inspect a Docker container on a Komodo Server. Returns the full " +
       "container state including configuration, mounts, network settings, " +
@@ -217,6 +222,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_inspect_docker_image",
+    title: "Inspect Docker Image",
     description:
       "Inspect a Docker image on a Komodo Server. Returns the full image " +
       "metadata including layers, configuration, labels, and creation info " +
@@ -251,6 +257,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_inspect_docker_network",
+    title: "Inspect Docker Network",
     description:
       "Inspect a Docker network on a Komodo Server. Returns the full " +
       "network configuration including driver, IPAM settings, connected " +
@@ -285,6 +292,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_inspect_docker_volume",
+    title: "Inspect Docker Volume",
     description:
       "Inspect a Docker volume on a Komodo Server. Returns the full " +
       "volume metadata including driver, mount point, labels, and options " +
@@ -319,6 +327,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_prune_docker",
+    title: "Prune Docker Resources",
     description:
       "\u26a0\ufe0f PRUNE unused Docker resources on a specific Komodo Server. " +
       "Removes stopped containers, dangling images, unused volumes, or " +
@@ -393,6 +402,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_delete_docker_resource",
+    title: "Delete Docker Resource",
     description:
       "\u26a0\ufe0f DELETE a specific Docker resource (image, volume, or network) " +
       "on a Komodo Server. Unlike prune which removes all unused resources, " +

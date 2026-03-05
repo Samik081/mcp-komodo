@@ -282,6 +282,7 @@ async function handleDelete(
 export function registerWriteTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
   registerTool(server, config, {
     name: "komodo_write_resource",
+    title: "Write Resource",
     description:
       "Create, update, or delete any Komodo resource. Supports all 10 resource " +
       "types: Stack, Deployment, Build, Repo, Procedure, Action, Alerter, " +

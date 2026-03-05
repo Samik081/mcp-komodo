@@ -24,6 +24,7 @@ export function registerRepoTools(server: McpServer, client: KomodoClient, confi
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_repos",
+    title: "List Repos",
     description:
       "List all Komodo Repos. A Repo is a Git repository cloned to a " +
       "server, optionally built using a Builder. Returns name, repo URL, " +
@@ -58,6 +59,7 @@ export function registerRepoTools(server: McpServer, client: KomodoClient, confi
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_repo",
+    title: "Get Repo",
     description:
       "Get detailed information about a specific Komodo Repo by name " +
       "or ID. A Repo is a Git repository cloned to a server. Returns " +
@@ -99,6 +101,7 @@ export function registerRepoTools(server: McpServer, client: KomodoClient, confi
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_repo_clone_pull",
+    title: "Clone or Pull Repo",
     description:
       "\u26a0\ufe0f CLONE or PULL a Komodo Repo on its target server. 'clone' " +
       "performs initial git clone (or pulls if already cloned). 'pull' " +
