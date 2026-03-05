@@ -20,6 +20,7 @@ export function registerBuilderTools(server: McpServer, client: KomodoClient, co
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_builders",
+    title: "List Builders",
     description:
       "List all Komodo Builders. A Builder is a build server (or AWS " +
       "instance) used to compile Docker images for Komodo Builds. " +
@@ -56,6 +57,7 @@ export function registerBuilderTools(server: McpServer, client: KomodoClient, co
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_builder",
+    title: "Get Builder",
     description:
       "Get detailed information about a specific Komodo Builder by name " +
       "or ID. A Builder is a build server used to compile Docker images. " +

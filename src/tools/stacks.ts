@@ -29,6 +29,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_stacks",
+    title: "List Stacks",
     description:
       "List all Komodo Stacks. A Stack is a multi-container deployment " +
       "defined by a Docker Compose file, deployed to a specific server. " +
@@ -63,6 +64,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_stack",
+    title: "Get Stack",
     description:
       "Get detailed information about a specific Komodo Stack by name " +
       "or ID. A Stack is a multi-container deployment defined by a Docker " +
@@ -104,6 +106,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_stack_log",
+    title: "Get Stack Log",
     description:
       "Get logs from a Komodo Stack's Docker Compose services. Optionally " +
       "search for specific terms in the log output. A Stack is a " +
@@ -183,6 +186,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_inspect_stack_container",
+    title: "Inspect Stack Container",
     description:
       "Inspect a Docker container for a specific service within a Stack. " +
       "Returns the full container state including configuration, mounts, " +
@@ -217,6 +221,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_stack_services",
+    title: "List Stack Services",
     description:
       "List all services in a Komodo Stack. Returns the service name, " +
       "Docker image, container state, and whether an image update is " +
@@ -257,6 +262,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_stacks_summary",
+    title: "Get Stacks Summary",
     description:
       "Get a summary of all Komodo Stacks. Returns aggregate counts " +
       "by state: total, running, stopped, down, unhealthy, and unknown.",
@@ -289,6 +295,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_deploy_stack",
+    title: "Deploy Stack",
     description:
       "\u26a0\ufe0f DEPLOY a Komodo Stack. This redeploys all services in the stack, " +
       "taking down containers and bringing them back up with the latest " +
@@ -350,6 +357,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_pull_stack",
+    title: "Pull Stack Images",
     description:
       "\u26a0\ufe0f PULL images for a Komodo Stack (docker compose pull). " +
       "Downloads the latest images without redeploying. Use this to " +
@@ -405,6 +413,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_stack_lifecycle",
+    title: "Manage Stack Lifecycle",
     description:
       "\u26a0\ufe0f LIFECYCLE: Control a Komodo Stack's container lifecycle. " +
       "Start brings up all containers, stop brings them down gracefully, " +
@@ -458,6 +467,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_destroy_stack",
+    title: "Destroy Stack",
     description:
       "\ud83d\udd34 DESTROY a Komodo Stack permanently. This stops all containers " +
       "and removes the stack configuration from Komodo. THIS CANNOT BE " +

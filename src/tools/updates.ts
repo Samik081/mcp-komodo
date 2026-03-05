@@ -23,6 +23,7 @@ export function registerUpdateTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_updates",
+    title: "List Updates",
     description:
       "List Komodo operation history (updates). Every execute operation " +
       "(deploy, start, stop, build, pull, etc.) creates an Update record. " +
@@ -105,6 +106,7 @@ export function registerUpdateTools(server: McpServer, client: KomodoClient, con
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_update",
+    title: "Get Update",
     description:
       "Get detailed information about a specific Komodo Update (operation " +
       "record) by ID. Returns the full operation details including status, " +

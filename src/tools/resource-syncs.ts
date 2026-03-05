@@ -24,6 +24,7 @@ export function registerResourceSyncTools(server: McpServer, client: KomodoClien
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_resource_syncs",
+    title: "List Resource Syncs",
     description:
       "List all Komodo Resource Syncs. A Resource Sync is a GitOps sync " +
       "that manages Komodo resources from TOML configuration files in a " +
@@ -63,6 +64,7 @@ export function registerResourceSyncTools(server: McpServer, client: KomodoClien
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_resource_sync",
+    title: "Get Resource Sync",
     description:
       "Get detailed information about a specific Komodo Resource Sync " +
       "by name or ID. A Resource Sync manages Komodo resources from TOML " +
@@ -109,6 +111,7 @@ export function registerResourceSyncTools(server: McpServer, client: KomodoClien
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_trigger_sync",
+    title: "Trigger Resource Sync",
     description:
       "\u26a0\ufe0f TRIGGER a Komodo Resource Sync. This pulls the latest TOML " +
       "configuration from the Git repo and applies changes to managed " +

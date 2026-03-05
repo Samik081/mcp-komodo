@@ -24,6 +24,7 @@ export function registerProcedureTools(server: McpServer, client: KomodoClient, 
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_list_procedures",
+    title: "List Procedures",
     description:
       "List all Komodo Procedures. A Procedure is an orchestrated " +
       "sequence of parallel stages that run other Komodo operations " +
@@ -64,6 +65,7 @@ export function registerProcedureTools(server: McpServer, client: KomodoClient, 
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_get_procedure",
+    title: "Get Procedure",
     description:
       "Get detailed information about a specific Komodo Procedure by " +
       "name or ID. A Procedure is an orchestrated sequence of stages. " +
@@ -107,6 +109,7 @@ export function registerProcedureTools(server: McpServer, client: KomodoClient, 
   // -------------------------------------------------------------------------
   registerTool(server, config, {
     name: "komodo_run_procedure",
+    title: "Run Procedure",
     description:
       "\u26a0\ufe0f RUN a Komodo Procedure. This executes all stages in sequence, " +
       "where each stage can run multiple operations in parallel. A " +
