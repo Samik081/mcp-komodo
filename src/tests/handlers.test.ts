@@ -2,10 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createServer } from "../core/server.js";
 import { registerAllTools } from "../tools/index.js";
 import { makeConfig, makeMockClient, connectTestClient } from "./helpers.js";
-import type { createClient } from "../core/client.js";
+import type { KomodoClient } from "../core/client.js";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
-
-type KomodoClient = ReturnType<typeof createClient>;
 
 describe("handler: komodo_list_servers", () => {
   let cleanup: () => Promise<void>;

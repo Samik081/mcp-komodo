@@ -45,6 +45,20 @@ export function sanitizeMessage(message: string): string {
   return sanitized;
 }
 
+/**
+ * Custom error class for Komodo API errors with optional HTTP status code.
+ * Consistent with AdGuardError / PveError in the other MCP servers.
+ */
+export class KomodoError extends Error {
+  public readonly statusCode?: number;
+
+  constructor(message: string, statusCode?: number) {
+    super(message);
+    this.name = "KomodoError";
+    this.statusCode = statusCode;
+  }
+}
+
 /** MCP-compliant error response type with isError flag. */
 export type McpErrorResponse = {
   content: Array<{ type: "text"; text: string }>;

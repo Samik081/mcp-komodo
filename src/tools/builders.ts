@@ -8,13 +8,11 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { createClient } from "../core/client.js";
+import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import { formatBuilderList, formatBuilderDetail } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
-
-type KomodoClient = ReturnType<typeof createClient>;
 
 export function registerBuilderTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
   // -------------------------------------------------------------------------

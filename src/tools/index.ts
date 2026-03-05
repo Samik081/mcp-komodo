@@ -6,7 +6,7 @@
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { createClient } from "../core/client.js";
+import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { registerServerTools } from "./servers.js";
 import { registerStackTools } from "./stacks.js";
@@ -24,7 +24,7 @@ import { registerWriteTools } from "./write.js";
 
 export function registerAllTools(
   server: McpServer,
-  client: ReturnType<typeof createClient>,
+  client: KomodoClient,
   config: AppConfig,
 ): void {
   registerServerTools(server, client, config);
