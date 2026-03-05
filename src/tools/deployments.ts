@@ -9,8 +9,8 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { Types } from "komodo_client";
-import type { createClient } from "../core/client.js";
+import { SearchCombinator } from "../types/komodo.js";
+import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
@@ -21,8 +21,6 @@ import {
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
-
-type KomodoClient = ReturnType<typeof createClient>;
 
 export function registerDeploymentTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
   // -------------------------------------------------------------------------
@@ -155,7 +153,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
           log = await client.read("SearchDeploymentLog", {
             deployment,
             terms: search_terms,
-            combinator: (search_combinator as Types.SearchCombinator) || Types.SearchCombinator.Or,
+            combinator: (search_combinator as SearchCombinator) || SearchCombinator.Or,
           });
         } else {
           log = await client.read("GetDeploymentLog", {

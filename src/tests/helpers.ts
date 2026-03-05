@@ -3,9 +3,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { AppConfig } from "../core/config.js";
-import type { createClient } from "../core/client.js";
-
-type KomodoClient = ReturnType<typeof createClient>;
+import type { KomodoClient } from "../core/client.js";
 
 export function makeConfig(overrides: Partial<AppConfig> = {}): AppConfig {
   return {

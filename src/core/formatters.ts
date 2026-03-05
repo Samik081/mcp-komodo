@@ -6,7 +6,46 @@
  * Details show key fields only, not every config option.
  */
 
-import { Types } from "komodo_client";
+import type {
+  ServerListItem,
+  Server,
+  ServerActionState,
+  SystemStats,
+  SystemInformation,
+  SystemProcess,
+  StackListItem,
+  Stack,
+  StackActionState,
+  StackService,
+  GetStacksSummaryResponse,
+  DeploymentListItem,
+  Deployment,
+  DeploymentActionState,
+  GetDeploymentsSummaryResponse,
+  BuildListItem,
+  Build,
+  BuildActionState,
+  RepoListItem,
+  Repo,
+  RepoActionState,
+  ProcedureListItem,
+  Procedure,
+  ProcedureActionState,
+  ActionListItem,
+  Action,
+  ActionActionState,
+  BuilderListItem,
+  Builder,
+  AlerterListItem,
+  Alerter,
+  ResourceSyncListItem,
+  ResourceSync,
+  ResourceSyncActionState,
+  UpdateListItem,
+  Update,
+  Log,
+  Version,
+} from "../types/komodo.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -17,7 +56,7 @@ function formatTags(tags?: string[]): string {
   return `\nTags: ${tags.join(", ")}`;
 }
 
-function formatVersion(v?: Types.Version): string {
+function formatVersion(v?: Version): string {
   if (!v) return "0.0.0";
   return `${v.major}.${v.minor}.${v.patch}`;
 }
@@ -41,7 +80,7 @@ function formatActionState(
 // Server formatters
 // ---------------------------------------------------------------------------
 
-export function formatServerList(servers: Types.ServerListItem[]): string {
+export function formatServerList(servers: ServerListItem[]): string {
   if (servers.length === 0) return "No servers found.";
   const lines = servers.map(
     (s) =>
@@ -51,8 +90,8 @@ export function formatServerList(servers: Types.ServerListItem[]): string {
 }
 
 export function formatServerDetail(
-  server: Types.Server,
-  actionState?: Types.ServerActionState,
+  server: Server,
+  actionState?: ServerActionState,
 ): string {
   const sections: string[] = [
     `Name: ${server.name}`,
@@ -75,7 +114,7 @@ export function formatServerDetail(
   return sections.filter(Boolean).join("\n");
 }
 
-export function formatSystemStats(stats: Types.SystemStats): string {
+export function formatSystemStats(stats: SystemStats): string {
   const memPct =
     stats.mem_total_gb > 0
       ? ((stats.mem_used_gb / stats.mem_total_gb) * 100).toFixed(0)
@@ -101,7 +140,7 @@ export function formatSystemStats(stats: Types.SystemStats): string {
   return lines.join("\n");
 }
 
-export function formatSystemInfo(info: Types.SystemInformation): string {
+export function formatSystemInfo(info: SystemInformation): string {
   const lines: string[] = [];
   if (info.host_name) lines.push(`Hostname: ${info.host_name}`);
   if (info.os) lines.push(`OS: ${info.os}`);
@@ -111,7 +150,7 @@ export function formatSystemInfo(info: Types.SystemInformation): string {
   return lines.join("\n");
 }
 
-export function formatProcessList(processes: Types.SystemProcess[]): string {
+export function formatProcessList(processes: SystemProcess[]): string {
   if (processes.length === 0) return "No processes found.";
   const sorted = [...processes]
     .sort((a, b) => b.cpu_perc - a.cpu_perc)
@@ -128,7 +167,7 @@ export function formatProcessList(processes: Types.SystemProcess[]): string {
 // Stack formatters
 // ---------------------------------------------------------------------------
 
-export function formatStackList(stacks: Types.StackListItem[]): string {
+export function formatStackList(stacks: StackListItem[]): string {
   if (stacks.length === 0) return "No stacks found.";
   const lines = stacks.map(
     (s) =>
@@ -138,8 +177,8 @@ export function formatStackList(stacks: Types.StackListItem[]): string {
 }
 
 export function formatStackDetail(
-  stack: Types.Stack,
-  actionState?: Types.StackActionState,
+  stack: Stack,
+  actionState?: StackActionState,
 ): string {
   const sections: string[] = [
     `Name: ${stack.name}`,
@@ -173,7 +212,7 @@ export function formatStackDetail(
 // ---------------------------------------------------------------------------
 
 export function formatDeploymentList(
-  deployments: Types.DeploymentListItem[],
+  deployments: DeploymentListItem[],
 ): string {
   if (deployments.length === 0) return "No deployments found.";
   const lines = deployments.map(
@@ -184,8 +223,8 @@ export function formatDeploymentList(
 }
 
 export function formatDeploymentDetail(
-  deployment: Types.Deployment,
-  actionState?: Types.DeploymentActionState,
+  deployment: Deployment,
+  actionState?: DeploymentActionState,
 ): string {
   const sections: string[] = [
     `Name: ${deployment.name}`,
@@ -218,7 +257,7 @@ export function formatDeploymentDetail(
 // Build formatters
 // ---------------------------------------------------------------------------
 
-export function formatBuildList(builds: Types.BuildListItem[]): string {
+export function formatBuildList(builds: BuildListItem[]): string {
   if (builds.length === 0) return "No builds found.";
   const lines = builds.map(
     (b) =>
@@ -228,8 +267,8 @@ export function formatBuildList(builds: Types.BuildListItem[]): string {
 }
 
 export function formatBuildDetail(
-  build: Types.Build,
-  actionState?: Types.BuildActionState,
+  build: Build,
+  actionState?: BuildActionState,
 ): string {
   const sections: string[] = [
     `Name: ${build.name}`,
@@ -261,7 +300,7 @@ export function formatBuildDetail(
 // Repo formatters
 // ---------------------------------------------------------------------------
 
-export function formatRepoList(repos: Types.RepoListItem[]): string {
+export function formatRepoList(repos: RepoListItem[]): string {
   if (repos.length === 0) return "No repos found.";
   const lines = repos.map(
     (r) =>
@@ -271,8 +310,8 @@ export function formatRepoList(repos: Types.RepoListItem[]): string {
 }
 
 export function formatRepoDetail(
-  repo: Types.Repo,
-  actionState?: Types.RepoActionState,
+  repo: Repo,
+  actionState?: RepoActionState,
 ): string {
   const sections: string[] = [
     `Name: ${repo.name}`,
@@ -305,7 +344,7 @@ export function formatRepoDetail(
 // ---------------------------------------------------------------------------
 
 export function formatProcedureList(
-  procedures: Types.ProcedureListItem[],
+  procedures: ProcedureListItem[],
 ): string {
   if (procedures.length === 0) return "No procedures found.";
   const lines = procedures.map(
@@ -316,8 +355,8 @@ export function formatProcedureList(
 }
 
 export function formatProcedureDetail(
-  procedure: Types.Procedure,
-  actionState?: Types.ProcedureActionState,
+  procedure: Procedure,
+  actionState?: ProcedureActionState,
 ): string {
   const sections: string[] = [
     `Name: ${procedure.name}`,
@@ -346,7 +385,7 @@ export function formatProcedureDetail(
 // Action formatters
 // ---------------------------------------------------------------------------
 
-export function formatActionList(actions: Types.ActionListItem[]): string {
+export function formatActionList(actions: ActionListItem[]): string {
   if (actions.length === 0) return "No actions found.";
   const lines = actions.map(
     (a) =>
@@ -356,8 +395,8 @@ export function formatActionList(actions: Types.ActionListItem[]): string {
 }
 
 export function formatActionDetail(
-  action: Types.Action,
-  actionState?: Types.ActionActionState,
+  action: Action,
+  actionState?: ActionActionState,
 ): string {
   const sections: string[] = [
     `Name: ${action.name}`,
@@ -381,7 +420,7 @@ export function formatActionDetail(
 // Builder formatters
 // ---------------------------------------------------------------------------
 
-export function formatBuilderList(builders: Types.BuilderListItem[]): string {
+export function formatBuilderList(builders: BuilderListItem[]): string {
   if (builders.length === 0) return "No builders found.";
   const lines = builders.map(
     (b) =>
@@ -391,7 +430,7 @@ export function formatBuilderList(builders: Types.BuilderListItem[]): string {
 }
 
 export function formatBuilderDetail(
-  builder: Types.Builder,
+  builder: Builder,
   actionState?: Record<string, boolean>,
 ): string {
   const sections: string[] = [
@@ -421,7 +460,7 @@ export function formatBuilderDetail(
 // Alerter formatters
 // ---------------------------------------------------------------------------
 
-export function formatAlerterList(alerters: Types.AlerterListItem[]): string {
+export function formatAlerterList(alerters: AlerterListItem[]): string {
   if (alerters.length === 0) return "No alerters found.";
   const lines = alerters.map(
     (a) =>
@@ -430,7 +469,7 @@ export function formatAlerterList(alerters: Types.AlerterListItem[]): string {
   return `Found ${alerters.length} alerter(s):\n${lines.join("\n")}`;
 }
 
-export function formatAlerterDetail(alerter: Types.Alerter): string {
+export function formatAlerterDetail(alerter: Alerter): string {
   const sections: string[] = [
     `Name: ${alerter.name}`,
     `ID: ${alerter._id?.$oid ?? "unknown"}`,
@@ -450,7 +489,7 @@ export function formatAlerterDetail(alerter: Types.Alerter): string {
 // ---------------------------------------------------------------------------
 
 export function formatResourceSyncList(
-  syncs: Types.ResourceSyncListItem[],
+  syncs: ResourceSyncListItem[],
 ): string {
   if (syncs.length === 0) return "No resource syncs found.";
   const lines = syncs.map(
@@ -461,8 +500,8 @@ export function formatResourceSyncList(
 }
 
 export function formatResourceSyncDetail(
-  sync: Types.ResourceSync,
-  actionState?: Types.ResourceSyncActionState,
+  sync: ResourceSync,
+  actionState?: ResourceSyncActionState,
 ): string {
   const sections: string[] = [
     `Name: ${sync.name}`,
@@ -495,7 +534,7 @@ export function formatResourceSyncDetail(
 // ---------------------------------------------------------------------------
 
 export function formatStackServiceList(
-  services: Types.StackService[],
+  services: StackService[],
 ): string {
   if (services.length === 0) return "No services found in this stack.";
   const lines = services.map((s) => {
@@ -518,7 +557,7 @@ export function formatStackServiceList(
 // ---------------------------------------------------------------------------
 
 export function formatStacksSummary(
-  summary: Types.GetStacksSummaryResponse,
+  summary: GetStacksSummaryResponse,
 ): string {
   const lines: string[] = [
     `Stacks summary:`,
@@ -533,7 +572,7 @@ export function formatStacksSummary(
 }
 
 export function formatDeploymentsSummary(
-  summary: Types.GetDeploymentsSummaryResponse,
+  summary: GetDeploymentsSummaryResponse,
 ): string {
   const lines: string[] = [
     `Deployments summary:`,
@@ -552,7 +591,7 @@ export function formatDeploymentsSummary(
 // ---------------------------------------------------------------------------
 
 export function formatUpdateList(
-  updates: Types.UpdateListItem[],
+  updates: UpdateListItem[],
   nextPage?: number,
 ): string {
   if (updates.length === 0) return "No updates found.";
@@ -569,7 +608,7 @@ export function formatUpdateList(
   return text;
 }
 
-export function formatUpdateDetail(update: Types.Update): string {
+export function formatUpdateDetail(update: Update): string {
   const sections: string[] = [
     `Operation: ${update.operation}`,
     `Target: ${update.target.type}/${update.target.id}`,
@@ -598,7 +637,7 @@ export function formatUpdateDetail(update: Types.Update): string {
 // Log formatter
 // ---------------------------------------------------------------------------
 
-export function formatLog(log: Types.Log): string {
+export function formatLog(log: Log): string {
   const output = log.stdout || log.stderr || "(no output)";
   const header = `[${log.success ? "OK" : "FAILED"}] ${log.stage}`;
   return `${header}\n${output}`;
@@ -653,7 +692,7 @@ export function formatResourceDeleted(
 // ---------------------------------------------------------------------------
 
 export function formatUpdateCreated(
-  update: Types.Update,
+  update: Update,
   description: string,
 ): string {
   const updateId = update._id?.$oid ?? "unknown";
