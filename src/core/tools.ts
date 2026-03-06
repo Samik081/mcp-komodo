@@ -1,6 +1,6 @@
 /**
  * Tool registration helper. Wraps MCP server.registerTool() with
- * access tier checking.
+ * access tier checking, category filtering, and blacklist/whitelist support.
  *
  * Komodo uses a 3-tier model: "read-only" < "read-execute" < "full".
  * Each tool declares its minimum tier. The wrapper skips tools whose
@@ -34,31 +34,63 @@ export interface ToolRegistrationOptions {
   }>;
 }
 
+/** Tracks all tool names seen during registration for post-registration validation. */
+const seenToolNames = new Set<string>();
+
 /**
- * Register a tool with the MCP server, respecting access tier.
+ * Register a tool with the MCP server, respecting blacklist/whitelist,
+ * access tier, and category filters.
  *
- * Returns true if the tool was registered, false if filtered out.
+ * Filter precedence:
+ * 1. Blacklist always wins (even over whitelist — logs warning if both)
+ * 2. Whitelist bypasses access tier and category filters
+ * 3. Access tier gate
+ * 4. Category gate
  *
  * Unlike AdGuard/Authentik, Komodo handlers return the full MCP response
  * format (including error handling), so the wrapper does not add error wrapping.
+ *
+ * Returns true if the tool was registered, false if filtered out.
  */
 export function registerTool(
   server: McpServer,
   config: AppConfig,
   options: ToolRegistrationOptions,
 ): boolean {
-  if (TIER_LEVELS[config.accessTier] < TIER_LEVELS[options.accessTier]) {
-    logger.debug(
-      `Skipping tool "${options.name}" (requires ${options.accessTier}, running in ${config.accessTier} mode)`,
-    );
+  seenToolNames.add(options.name);
+
+  const isBlacklisted =
+    config.toolBlacklist !== null && config.toolBlacklist.includes(options.name);
+  const isWhitelisted =
+    config.toolWhitelist !== null && config.toolWhitelist.includes(options.name);
+
+  // Blacklist always wins
+  if (isBlacklisted) {
+    if (isWhitelisted) {
+      logger.warn(
+        `Tool "${options.name}" is both blacklisted and whitelisted — blacklist takes precedence, skipping`,
+      );
+    } else {
+      logger.debug(`Skipping tool "${options.name}" (blacklisted)`);
+    }
     return false;
   }
 
-  if (config.categories !== null && !config.categories.includes(options.category)) {
-    logger.debug(
-      `Skipping tool "${options.name}" (category "${options.category}" not in allowed categories)`,
-    );
-    return false;
+  // Whitelist bypasses tier and category filters
+  if (!isWhitelisted) {
+    if (TIER_LEVELS[config.accessTier] < TIER_LEVELS[options.accessTier]) {
+      logger.debug(
+        `Skipping tool "${options.name}" (requires ${options.accessTier}, running in ${config.accessTier} mode)`,
+      );
+      return false;
+    }
+
+    if (config.categories !== null && !config.categories.includes(options.category)) {
+      logger.debug(
+        `Skipping tool "${options.name}" (category "${options.category}" not in allowed categories)`,
+      );
+      return false;
+    }
   }
 
   const annotations: ToolAnnotations = {
@@ -87,4 +119,21 @@ export function registerTool(
   });
 
   return true;
+}
+
+/**
+ * Validate that all tool names in blacklist/whitelist actually exist.
+ * Call after registerAllTools() to warn about typos or stale entries.
+ */
+export function validateToolLists(config: AppConfig): void {
+  for (const name of config.toolBlacklist ?? []) {
+    if (!seenToolNames.has(name)) {
+      logger.warn(`Blacklisted tool "${name}" does not match any known tool`);
+    }
+  }
+  for (const name of config.toolWhitelist ?? []) {
+    if (!seenToolNames.has(name)) {
+      logger.warn(`Whitelisted tool "${name}" does not match any known tool`);
+    }
+  }
 }

@@ -8,6 +8,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
+import { validateToolLists } from "../core/tools.js";
 import { registerServerTools } from "./servers.js";
 import { registerStackTools } from "./stacks.js";
 import { registerDeploymentTools } from "./deployments.js";
@@ -40,4 +41,6 @@ export function registerAllTools(
   registerResourceSyncTools(server, client, config);
   registerUpdateTools(server, client, config);
   registerWriteTools(server, client, config);
+
+  validateToolLists(config);
 }

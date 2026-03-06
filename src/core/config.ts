@@ -11,6 +11,8 @@ export interface AppConfig {
   apiSecret: string;
   accessTier: AccessTier;
   categories: string[] | null;
+  toolBlacklist: string[] | null;
+  toolWhitelist: string[] | null;
   excludeToolTitles: boolean;
   debug: boolean;
   transport: 'stdio' | 'http';
@@ -33,6 +35,16 @@ function parseAccessTier(): AccessTier {
 }
 
 function parseCategories(value: string | undefined): string[] | null {
+  if (value === undefined || value === '') {
+    return null;
+  }
+  return value
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
+function parseToolList(value: string | undefined): string[] | null {
   if (value === undefined || value === '') {
     return null;
   }
@@ -86,6 +98,8 @@ export function loadConfig(): AppConfig {
     apiSecret: apiSecret!,
     accessTier: parseAccessTier(),
     categories: parseCategories(process.env.KOMODO_CATEGORIES),
+    toolBlacklist: parseToolList(process.env.KOMODO_TOOL_BLACKLIST),
+    toolWhitelist: parseToolList(process.env.KOMODO_TOOL_WHITELIST),
     excludeToolTitles,
     debug: Boolean(process.env.DEBUG),
     transport,

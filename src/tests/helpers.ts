@@ -12,6 +12,8 @@ export function makeConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     apiSecret: "test-api-secret",
     accessTier: "full",
     categories: null,
+    toolBlacklist: null,
+    toolWhitelist: null,
     excludeToolTitles: false,
     debug: false,
     transport: "stdio",
