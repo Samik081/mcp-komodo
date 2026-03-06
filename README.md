@@ -158,6 +158,8 @@ Set `KOMODO_ACCESS_TIER` to `read-only`, `read-execute`, or `full` (default: `fu
 | `KOMODO_API_SECRET` | Yes | -- | API secret for authentication |
 | `KOMODO_ACCESS_TIER` | No | `full` | Access tier: `read-only`, `read-execute`, or `full` |
 | `KOMODO_CATEGORIES` | No | *(all)* | Comma-separated category allowlist (e.g., `servers,stacks,builds`) |
+| `KOMODO_TOOL_BLACKLIST` | No | *(none)* | Comma-separated list of tool names to exclude (e.g., `komodo_destroy_stack`) |
+| `KOMODO_TOOL_WHITELIST` | No | *(none)* | Comma-separated list of tool names to force-include, bypassing access tier and category filters |
 | `DEBUG` | No | -- | Set to any value to enable debug logging to stderr |
 | `MCP_TRANSPORT` | No | `stdio` | Transport mode: `stdio` (default) or `http` |
 | `MCP_PORT` | No | `3000` | HTTP server port (only used when `MCP_TRANSPORT=http`) |
