@@ -5,19 +5,23 @@
  * An Action is a custom TypeScript/Deno script that runs on Komodo Core.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
-  formatActionList,
   formatActionDetail,
+  formatActionList,
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
 
-export function registerActionTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerActionTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   // -------------------------------------------------------------------------
   // komodo_list_actions
   // -------------------------------------------------------------------------
@@ -124,10 +128,7 @@ export function registerActionTools(server: McpServer, client: KomodoClient, con
           content: [
             {
               type: "text" as const,
-              text: formatUpdateCreated(
-                update,
-                `Running action '${action}'`,
-              ),
+              text: formatUpdateCreated(update, `Running action '${action}'`),
             },
           ],
         };

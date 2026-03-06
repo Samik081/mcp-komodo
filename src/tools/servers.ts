@@ -5,22 +5,26 @@
  * A Server is a remote machine managed by Komodo's Periphery agent.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
-  formatServerList,
-  formatServerDetail,
-  formatSystemStats,
-  formatSystemInfo,
   formatProcessList,
+  formatServerDetail,
+  formatServerList,
+  formatSystemInfo,
+  formatSystemStats,
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
 
-export function registerServerTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerServerTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   // -------------------------------------------------------------------------
   // komodo_list_servers
   // -------------------------------------------------------------------------
@@ -92,10 +96,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
           ],
         };
       } catch (error) {
-        return handleKomodoError(
-          `getting server '${serverParam}'`,
-          error,
-        );
+        return handleKomodoError(`getting server '${serverParam}'`, error);
       }
     },
   });
@@ -128,9 +129,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
           server: serverParam,
         });
         return {
-          content: [
-            { type: "text" as const, text: formatSystemStats(stats) },
-          ],
+          content: [{ type: "text" as const, text: formatSystemStats(stats) }],
         };
       } catch (error) {
         return handleKomodoError(
@@ -207,12 +206,20 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
       const serverParam = args.server as string;
       const container = args.container as string;
       try {
-        const result = await client.read("InspectDockerContainer", { server: serverParam, container });
+        const result = await client.read("InspectDockerContainer", {
+          server: serverParam,
+          container,
+        });
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+          content: [
+            { type: "text" as const, text: JSON.stringify(result, null, 2) },
+          ],
         };
       } catch (error) {
-        return handleKomodoError(`inspecting container '${container}' on server '${serverParam}'`, error);
+        return handleKomodoError(
+          `inspecting container '${container}' on server '${serverParam}'`,
+          error,
+        );
       }
     },
   });
@@ -242,12 +249,20 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
       const serverParam = args.server as string;
       const image = args.image as string;
       try {
-        const result = await client.read("InspectDockerImage", { server: serverParam, image });
+        const result = await client.read("InspectDockerImage", {
+          server: serverParam,
+          image,
+        });
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+          content: [
+            { type: "text" as const, text: JSON.stringify(result, null, 2) },
+          ],
         };
       } catch (error) {
-        return handleKomodoError(`inspecting image '${image}' on server '${serverParam}'`, error);
+        return handleKomodoError(
+          `inspecting image '${image}' on server '${serverParam}'`,
+          error,
+        );
       }
     },
   });
@@ -277,12 +292,20 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
       const serverParam = args.server as string;
       const network = args.network as string;
       try {
-        const result = await client.read("InspectDockerNetwork", { server: serverParam, network });
+        const result = await client.read("InspectDockerNetwork", {
+          server: serverParam,
+          network,
+        });
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+          content: [
+            { type: "text" as const, text: JSON.stringify(result, null, 2) },
+          ],
         };
       } catch (error) {
-        return handleKomodoError(`inspecting network '${network}' on server '${serverParam}'`, error);
+        return handleKomodoError(
+          `inspecting network '${network}' on server '${serverParam}'`,
+          error,
+        );
       }
     },
   });
@@ -312,12 +335,20 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
       const serverParam = args.server as string;
       const volume = args.volume as string;
       try {
-        const result = await client.read("InspectDockerVolume", { server: serverParam, volume });
+        const result = await client.read("InspectDockerVolume", {
+          server: serverParam,
+          volume,
+        });
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+          content: [
+            { type: "text" as const, text: JSON.stringify(result, null, 2) },
+          ],
         };
       } catch (error) {
-        return handleKomodoError(`inspecting volume '${volume}' on server '${serverParam}'`, error);
+        return handleKomodoError(
+          `inspecting volume '${volume}' on server '${serverParam}'`,
+          error,
+        );
       }
     },
   });
@@ -342,9 +373,7 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
       idempotentHint: true,
     },
     inputSchema: {
-      server: z
-        .string()
-        .describe("Server name or ID to prune resources on"),
+      server: z.string().describe("Server name or ID to prune resources on"),
       resource_type: z
         .enum([
           "containers",
@@ -363,7 +392,13 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
     },
     handler: async (args) => {
       const serverParam = args.server as string;
-      const resource_type = args.resource_type as "containers" | "images" | "volumes" | "networks" | "buildx" | "system";
+      const resource_type = args.resource_type as
+        | "containers"
+        | "images"
+        | "volumes"
+        | "networks"
+        | "buildx"
+        | "system";
       try {
         const operationMap = {
           containers: "PruneContainers",
@@ -373,10 +408,9 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
           buildx: "PruneBuildx",
           system: "PruneSystem",
         } as const;
-        const update = await client.execute(
-          operationMap[resource_type],
-          { server: serverParam },
-        );
+        const update = await client.execute(operationMap[resource_type], {
+          server: serverParam,
+        });
         return {
           content: [
             {
@@ -430,7 +464,10 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
     },
     handler: async (args) => {
       const serverParam = args.server as string;
-      const resource_type = args.resource_type as "image" | "volume" | "network";
+      const resource_type = args.resource_type as
+        | "image"
+        | "volume"
+        | "network";
       const name = args.name as string;
       try {
         const operationMap = {
@@ -438,10 +475,10 @@ export function registerServerTools(server: McpServer, client: KomodoClient, con
           volume: "DeleteVolume",
           network: "DeleteNetwork",
         } as const;
-        const update = await client.execute(
-          operationMap[resource_type],
-          { server: serverParam, name },
-        );
+        const update = await client.execute(operationMap[resource_type], {
+          server: serverParam,
+          name,
+        });
         return {
           content: [
             {

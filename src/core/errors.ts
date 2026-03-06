@@ -30,10 +30,7 @@ export function sanitizeMessage(message: string): string {
     sanitized = sanitized.replaceAll(pattern, "[REDACTED]");
   }
   // Strip common auth header patterns
-  sanitized = sanitized.replace(
-    /x-api-key:\s*\S+/gi,
-    "x-api-key: [REDACTED]",
-  );
+  sanitized = sanitized.replace(/x-api-key:\s*\S+/gi, "x-api-key: [REDACTED]");
   sanitized = sanitized.replace(
     /x-api-secret:\s*\S+/gi,
     "x-api-secret: [REDACTED]",

@@ -6,15 +6,19 @@
  * for Komodo alerts and status changes.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
-import { formatAlerterList, formatAlerterDetail } from "../core/formatters.js";
+import { formatAlerterDetail, formatAlerterList } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
 
-export function registerAlerterTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerAlerterTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   // -------------------------------------------------------------------------
   // komodo_list_alerters
   // -------------------------------------------------------------------------

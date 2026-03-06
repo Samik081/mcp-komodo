@@ -7,43 +7,43 @@
  */
 
 import type {
-  ServerListItem,
-  Server,
-  ServerActionState,
-  SystemStats,
-  SystemInformation,
-  SystemProcess,
-  StackListItem,
-  Stack,
-  StackActionState,
-  StackService,
-  GetStacksSummaryResponse,
-  DeploymentListItem,
-  Deployment,
-  DeploymentActionState,
-  GetDeploymentsSummaryResponse,
-  BuildListItem,
-  Build,
-  BuildActionState,
-  RepoListItem,
-  Repo,
-  RepoActionState,
-  ProcedureListItem,
-  Procedure,
-  ProcedureActionState,
-  ActionListItem,
   Action,
   ActionActionState,
-  BuilderListItem,
-  Builder,
-  AlerterListItem,
+  ActionListItem,
   Alerter,
-  ResourceSyncListItem,
+  AlerterListItem,
+  Build,
+  BuildActionState,
+  Builder,
+  BuilderListItem,
+  BuildListItem,
+  Deployment,
+  DeploymentActionState,
+  DeploymentListItem,
+  GetDeploymentsSummaryResponse,
+  GetStacksSummaryResponse,
+  Log,
+  Procedure,
+  ProcedureActionState,
+  ProcedureListItem,
+  Repo,
+  RepoActionState,
+  RepoListItem,
   ResourceSync,
   ResourceSyncActionState,
-  UpdateListItem,
+  ResourceSyncListItem,
+  Server,
+  ServerActionState,
+  ServerListItem,
+  Stack,
+  StackActionState,
+  StackListItem,
+  StackService,
+  SystemInformation,
+  SystemProcess,
+  SystemStats,
   Update,
-  Log,
+  UpdateListItem,
   Version,
 } from "../types/komodo.js";
 
@@ -189,19 +189,25 @@ export function formatStackDetail(
     const info = stack.info;
     if (info.deployed_project_name)
       sections.push(`Project: ${info.deployed_project_name}`);
-    if (info.deployed_hash) sections.push(`Deployed commit: ${info.deployed_hash}`);
+    if (info.deployed_hash)
+      sections.push(`Deployed commit: ${info.deployed_hash}`);
     if (info.latest_hash) sections.push(`Latest commit: ${info.latest_hash}`);
   }
   if (stack.config) {
     const cfg = stack.config;
     sections.push(`Server: ${cfg.server_id || "unassigned"}`);
-    if (cfg.repo) sections.push(`Repo: ${cfg.git_provider}/${cfg.repo} (branch: ${cfg.branch})`);
+    if (cfg.repo)
+      sections.push(
+        `Repo: ${cfg.git_provider}/${cfg.repo} (branch: ${cfg.branch})`,
+      );
     sections.push(`Auto-pull: ${cfg.auto_pull}`);
     sections.push(`Webhook enabled: ${cfg.webhook_enabled}`);
   }
   if (stack.tags?.length) sections.push(`Tags: ${stack.tags.join(", ")}`);
   if (actionState) {
-    const stateStr = formatActionState(actionState as unknown as Record<string, boolean>);
+    const stateStr = formatActionState(
+      actionState as unknown as Record<string, boolean>,
+    );
     if (stateStr) sections.push(stateStr.trim());
   }
   return sections.join("\n");
@@ -245,9 +251,12 @@ export function formatDeploymentDetail(
     if (cfg.restart) sections.push(`Restart: ${cfg.restart}`);
     sections.push(`Redeploy on build: ${cfg.redeploy_on_build ?? false}`);
   }
-  if (deployment.tags?.length) sections.push(`Tags: ${deployment.tags.join(", ")}`);
+  if (deployment.tags?.length)
+    sections.push(`Tags: ${deployment.tags.join(", ")}`);
   if (actionState) {
-    const stateStr = formatActionState(actionState as unknown as Record<string, boolean>);
+    const stateStr = formatActionState(
+      actionState as unknown as Record<string, boolean>,
+    );
     if (stateStr) sections.push(stateStr.trim());
   }
   return sections.join("\n");
@@ -277,7 +286,10 @@ export function formatBuildDetail(
   ];
   if (build.info) {
     const info = build.info;
-    if (info.last_built_at) sections.push(`Last built: ${new Date(info.last_built_at).toISOString()}`);
+    if (info.last_built_at)
+      sections.push(
+        `Last built: ${new Date(info.last_built_at).toISOString()}`,
+      );
     if (info.built_hash) sections.push(`Built commit: ${info.built_hash}`);
     if (info.latest_hash) sections.push(`Latest commit: ${info.latest_hash}`);
   }
@@ -285,7 +297,10 @@ export function formatBuildDetail(
     const cfg = build.config;
     if (cfg.builder_id) sections.push(`Builder: ${cfg.builder_id}`);
     if (cfg.version) sections.push(`Version: ${formatVersion(cfg.version)}`);
-    if (cfg.repo) sections.push(`Repo: ${cfg.git_provider}/${cfg.repo} (branch: ${cfg.branch})`);
+    if (cfg.repo)
+      sections.push(
+        `Repo: ${cfg.git_provider}/${cfg.repo} (branch: ${cfg.branch})`,
+      );
     sections.push(`Build path: ${cfg.build_path}`);
     sections.push(`Dockerfile: ${cfg.dockerfile_path}`);
   }
@@ -320,20 +335,34 @@ export function formatRepoDetail(
   ];
   if (repo.info) {
     const info = repo.info;
-    if (info.last_pulled_at) sections.push(`Last pulled: ${new Date(info.last_pulled_at).toISOString()}`);
+    if (info.last_pulled_at)
+      sections.push(
+        `Last pulled: ${new Date(info.last_pulled_at).toISOString()}`,
+      );
     if (info.built_hash) sections.push(`Built commit: ${info.built_hash}`);
     if (info.latest_hash) sections.push(`Latest commit: ${info.latest_hash}`);
   }
   if (repo.config) {
     const cfg = repo.config;
     sections.push(`Server: ${cfg.server_id || "unassigned"}`);
-    if (cfg.repo) sections.push(`Repo: ${cfg.git_provider}/${cfg.repo} (branch: ${cfg.branch})`);
-    if (cfg.on_clone) sections.push(`On clone: ${cfg.on_clone.path || ""} ${cfg.on_clone.command || ""}`.trim());
-    if (cfg.on_pull) sections.push(`On pull: ${cfg.on_pull.path || ""} ${cfg.on_pull.command || ""}`.trim());
+    if (cfg.repo)
+      sections.push(
+        `Repo: ${cfg.git_provider}/${cfg.repo} (branch: ${cfg.branch})`,
+      );
+    if (cfg.on_clone)
+      sections.push(
+        `On clone: ${cfg.on_clone.path || ""} ${cfg.on_clone.command || ""}`.trim(),
+      );
+    if (cfg.on_pull)
+      sections.push(
+        `On pull: ${cfg.on_pull.path || ""} ${cfg.on_pull.command || ""}`.trim(),
+      );
   }
   if (repo.tags?.length) sections.push(`Tags: ${repo.tags.join(", ")}`);
   if (actionState) {
-    const stateStr = formatActionState(actionState as unknown as Record<string, boolean>);
+    const stateStr = formatActionState(
+      actionState as unknown as Record<string, boolean>,
+    );
     if (stateStr) sections.push(stateStr.trim());
   }
   return sections.join("\n");
@@ -343,9 +372,7 @@ export function formatRepoDetail(
 // Procedure formatters
 // ---------------------------------------------------------------------------
 
-export function formatProcedureList(
-  procedures: ProcedureListItem[],
-): string {
+export function formatProcedureList(procedures: ProcedureListItem[]): string {
   if (procedures.length === 0) return "No procedures found.";
   const lines = procedures.map(
     (p) =>
@@ -369,12 +396,18 @@ export function formatProcedureDetail(
     sections.push(`Stages: ${stages.length}`);
     for (const stage of stages) {
       const execCount = stage.executions?.length ?? 0;
-      sections.push(`  - ${stage.name}${stage.enabled ? "" : " (disabled)"}: ${execCount} execution(s)`);
+      sections.push(
+        `  - ${stage.name}${stage.enabled ? "" : " (disabled)"}: ${execCount} execution(s)`,
+      );
     }
     sections.push(`Webhook enabled: ${cfg.webhook_enabled}`);
-    if (cfg.schedule) sections.push(`Schedule: ${cfg.schedule}${cfg.schedule_enabled ? "" : " (disabled)"}`);
+    if (cfg.schedule)
+      sections.push(
+        `Schedule: ${cfg.schedule}${cfg.schedule_enabled ? "" : " (disabled)"}`,
+      );
   }
-  if (procedure.tags?.length) sections.push(`Tags: ${procedure.tags.join(", ")}`);
+  if (procedure.tags?.length)
+    sections.push(`Tags: ${procedure.tags.join(", ")}`);
   if (actionState) {
     if (actionState.running) sections.push("Currently: running");
   }
@@ -406,12 +439,16 @@ export function formatActionDetail(
   if (action.config) {
     const cfg = action.config;
     sections.push(`Webhook enabled: ${cfg.webhook_enabled}`);
-    if (cfg.schedule) sections.push(`Schedule: ${cfg.schedule}${cfg.schedule_enabled ? "" : " (disabled)"}`);
+    if (cfg.schedule)
+      sections.push(
+        `Schedule: ${cfg.schedule}${cfg.schedule_enabled ? "" : " (disabled)"}`,
+      );
     sections.push(`Run at startup: ${cfg.run_at_startup}`);
   }
   if (action.tags?.length) sections.push(`Tags: ${action.tags.join(", ")}`);
   if (actionState) {
-    if (actionState.running > 0) sections.push(`Currently: ${actionState.running} instance(s) running`);
+    if (actionState.running > 0)
+      sections.push(`Currently: ${actionState.running} instance(s) running`);
   }
   return sections.join("\n");
 }
@@ -488,9 +525,7 @@ export function formatAlerterDetail(alerter: Alerter): string {
 // ResourceSync formatters
 // ---------------------------------------------------------------------------
 
-export function formatResourceSyncList(
-  syncs: ResourceSyncListItem[],
-): string {
+export function formatResourceSyncList(syncs: ResourceSyncListItem[]): string {
   if (syncs.length === 0) return "No resource syncs found.";
   const lines = syncs.map(
     (s) =>
@@ -510,15 +545,23 @@ export function formatResourceSyncDetail(
   ];
   if (sync.info) {
     const info = sync.info;
-    if (info.last_sync_ts) sections.push(`Last synced: ${new Date(info.last_sync_ts).toISOString()}`);
-    if (info.last_sync_hash) sections.push(`Last sync commit: ${info.last_sync_hash}`);
-    if (info.pending_error) sections.push(`Pending error: ${info.pending_error}`);
+    if (info.last_sync_ts)
+      sections.push(
+        `Last synced: ${new Date(info.last_sync_ts).toISOString()}`,
+      );
+    if (info.last_sync_hash)
+      sections.push(`Last sync commit: ${info.last_sync_hash}`);
+    if (info.pending_error)
+      sections.push(`Pending error: ${info.pending_error}`);
     const updates = info.resource_updates?.length ?? 0;
     if (updates > 0) sections.push(`Pending resource updates: ${updates}`);
   }
   if (sync.config) {
     const cfg = sync.config;
-    if (cfg.repo) sections.push(`Repo: ${cfg.git_provider}/${cfg.repo} (branch: ${cfg.branch})`);
+    if (cfg.repo)
+      sections.push(
+        `Repo: ${cfg.git_provider}/${cfg.repo} (branch: ${cfg.branch})`,
+      );
     const paths = cfg.resource_path ?? [];
     if (paths.length > 0) sections.push(`Resource paths: ${paths.join(", ")}`);
   }
@@ -533,9 +576,7 @@ export function formatResourceSyncDetail(
 // Stack service formatter
 // ---------------------------------------------------------------------------
 
-export function formatStackServiceList(
-  services: StackService[],
-): string {
+export function formatStackServiceList(services: StackService[]): string {
   if (services.length === 0) return "No services found in this stack.";
   const lines = services.map((s) => {
     const parts = [`- ${s.service}`];
@@ -556,9 +597,7 @@ export function formatStackServiceList(
 // Summary formatters
 // ---------------------------------------------------------------------------
 
-export function formatStacksSummary(
-  summary: GetStacksSummaryResponse,
-): string {
+export function formatStacksSummary(summary: GetStacksSummaryResponse): string {
   const lines: string[] = [
     `Stacks summary:`,
     `  Total: ${summary.total}`,
@@ -598,7 +637,8 @@ export function formatUpdateList(
   const lines = updates.map((u) => {
     const time = new Date(u.start_ts).toISOString();
     const status = u.status ?? "Unknown";
-    const result = status === "Complete" ? (u.success ? "OK" : "FAILED") : status;
+    const result =
+      status === "Complete" ? (u.success ? "OK" : "FAILED") : status;
     return `- [${result}] ${u.operation} → ${u.target.type}/${u.target.id} (${time}, by ${u.username || u.operator}) id=${u.id}`;
   });
   let text = `Found ${updates.length} update(s):\n${lines.join("\n")}`;
@@ -617,14 +657,18 @@ export function formatUpdateDetail(update: Update): string {
     `Operator: ${update.operator}`,
     `Started: ${new Date(update.start_ts).toISOString()}`,
   ];
-  if (update.end_ts) sections.push(`Ended: ${new Date(update.end_ts).toISOString()}`);
-  if (update.version) sections.push(`Version: ${formatVersion(update.version)}`);
+  if (update.end_ts)
+    sections.push(`Ended: ${new Date(update.end_ts).toISOString()}`);
+  if (update.version)
+    sections.push(`Version: ${formatVersion(update.version)}`);
   if (update.commit_hash) sections.push(`Commit: ${update.commit_hash}`);
 
   if (update.logs && update.logs.length > 0) {
     sections.push(`\nLogs (${update.logs.length} stage(s)):`);
     for (const log of update.logs) {
-      sections.push(`\n--- [${log.success ? "OK" : "FAILED"}] ${log.stage} ---`);
+      sections.push(
+        `\n--- [${log.success ? "OK" : "FAILED"}] ${log.stage} ---`,
+      );
       if (log.command) sections.push(`Command: ${log.command}`);
       if (log.stdout) sections.push(`stdout:\n${log.stdout}`);
       if (log.stderr) sections.push(`stderr:\n${log.stderr}`);
@@ -663,9 +707,7 @@ export function formatResourceCreated(
   if (resource.description) {
     lines.push(`Description: ${resource.description}`);
   }
-  lines.push(
-    `Use the corresponding get tool to view full details.`,
-  );
+  lines.push(`Use the corresponding get tool to view full details.`);
   return lines.join("\n");
 }
 

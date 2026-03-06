@@ -6,15 +6,15 @@
  * This covers all 20 WRITE requirements with a single tool registration.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
   formatResourceCreated,
-  formatResourceUpdated,
   formatResourceDeleted,
+  formatResourceUpdated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
 
@@ -245,7 +245,10 @@ async function handleDelete(
       content: [
         {
           type: "text" as const,
-          text: formatResourceDeleted(resourceType, { ...result, name: varName }),
+          text: formatResourceDeleted(resourceType, {
+            ...result,
+            name: varName,
+          }),
         },
       ],
     };
@@ -279,7 +282,11 @@ async function handleDelete(
 // Tool registration
 // ---------------------------------------------------------------------------
 
-export function registerWriteTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerWriteTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   registerTool(server, config, {
     name: "komodo_write_resource",
     title: "Write Resource",
@@ -344,7 +351,13 @@ export function registerWriteTools(server: McpServer, client: KomodoClient, conf
           case "create":
             return await handleCreate(client, resource_type, name, writeConfig);
           case "update":
-            return await handleUpdate(client, resource_type, id, name, writeConfig);
+            return await handleUpdate(
+              client,
+              resource_type,
+              id,
+              name,
+              writeConfig,
+            );
           case "delete":
             return await handleDelete(client, resource_type, id, name);
         }

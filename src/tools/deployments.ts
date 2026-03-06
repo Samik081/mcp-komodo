@@ -7,22 +7,26 @@
  * deployed to a specific server.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { SearchCombinator } from "../types/komodo.js";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
-  formatDeploymentList,
   formatDeploymentDetail,
+  formatDeploymentList,
   formatDeploymentsSummary,
   formatLog,
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
+import { SearchCombinator } from "../types/komodo.js";
 
-export function registerDeploymentTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerDeploymentTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   // -------------------------------------------------------------------------
   // komodo_list_deployments
   // -------------------------------------------------------------------------
@@ -97,10 +101,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
           ],
         };
       } catch (error) {
-        return handleKomodoError(
-          `getting deployment '${deployment}'`,
-          error,
-        );
+        return handleKomodoError(`getting deployment '${deployment}'`, error);
       }
     },
   });
@@ -130,9 +131,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
         .min(1)
         .max(5000)
         .optional()
-        .describe(
-          "Number of log lines to return (default: 50, max: 5000)",
-        ),
+        .describe("Number of log lines to return (default: 50, max: 5000)"),
       search_terms: z
         .array(z.string())
         .optional()
@@ -142,7 +141,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
         .optional()
         .describe(
           "How to combine search terms: 'And' = all terms must match, " +
-          "'Or' = any term matches (default: 'Or')",
+            "'Or' = any term matches (default: 'Or')",
         ),
     },
     handler: async (args) => {
@@ -151,19 +150,17 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
       const search_terms = args.search_terms as string[] | undefined;
       const search_combinator = args.search_combinator as string | undefined;
       try {
-        let log;
-        if (search_terms && search_terms.length > 0) {
-          log = await client.read("SearchDeploymentLog", {
-            deployment,
-            terms: search_terms,
-            combinator: (search_combinator as SearchCombinator) || SearchCombinator.Or,
-          });
-        } else {
-          log = await client.read("GetDeploymentLog", {
-            deployment,
-            tail: tail || 50,
-          });
-        }
+        const log = search_terms?.length
+          ? await client.read("SearchDeploymentLog", {
+              deployment,
+              terms: search_terms,
+              combinator:
+                (search_combinator as SearchCombinator) || SearchCombinator.Or,
+            })
+          : await client.read("GetDeploymentLog", {
+              deployment,
+              tail: tail || 50,
+            });
         return {
           content: [{ type: "text" as const, text: formatLog(log) }],
         };
@@ -199,12 +196,19 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
     handler: async (args) => {
       const deployment = args.deployment as string;
       try {
-        const container = await client.read("InspectDeploymentContainer", { deployment });
+        const container = await client.read("InspectDeploymentContainer", {
+          deployment,
+        });
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(container, null, 2) }],
+          content: [
+            { type: "text" as const, text: JSON.stringify(container, null, 2) },
+          ],
         };
       } catch (error) {
-        return handleKomodoError(`inspecting container for deployment '${deployment}'`, error);
+        return handleKomodoError(
+          `inspecting container for deployment '${deployment}'`,
+          error,
+        );
       }
     },
   });
@@ -280,10 +284,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
           ],
         };
       } catch (error) {
-        return handleKomodoError(
-          `deploying deployment '${deployment}'`,
-          error,
-        );
+        return handleKomodoError(`deploying deployment '${deployment}'`, error);
       }
     },
   });
@@ -363,7 +364,12 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
     },
     handler: async (args) => {
       const deployment = args.deployment as string;
-      const action = args.action as "start" | "stop" | "restart" | "pause" | "unpause";
+      const action = args.action as
+        | "start"
+        | "stop"
+        | "restart"
+        | "pause"
+        | "unpause";
       try {
         const operationMap = {
           start: "StartDeployment",
@@ -387,10 +393,7 @@ export function registerDeploymentTools(server: McpServer, client: KomodoClient,
           ],
         };
       } catch (error) {
-        return handleKomodoError(
-          `${action} deployment '${deployment}'`,
-          error,
-        );
+        return handleKomodoError(`${action} deployment '${deployment}'`, error);
       }
     },
   });

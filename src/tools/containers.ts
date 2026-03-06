@@ -6,16 +6,20 @@
  * unlike deployment/stack logs which only need the resource name.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { SearchCombinator } from "../types/komodo.js";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import { formatLog } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
+import { SearchCombinator } from "../types/komodo.js";
 
-export function registerContainerTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerContainerTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   // -------------------------------------------------------------------------
   // komodo_get_container_log
   // -------------------------------------------------------------------------
@@ -43,9 +47,7 @@ export function registerContainerTools(server: McpServer, client: KomodoClient, 
         .min(1)
         .max(5000)
         .optional()
-        .describe(
-          "Number of log lines to return (default: 50, max: 5000)",
-        ),
+        .describe("Number of log lines to return (default: 50, max: 5000)"),
       search_terms: z
         .array(z.string())
         .optional()
@@ -62,21 +64,19 @@ export function registerContainerTools(server: McpServer, client: KomodoClient, 
       const search_terms = args.search_terms as string[] | undefined;
       const search_combinator = args.search_combinator as string | undefined;
       try {
-        let log;
-        if (search_terms && search_terms.length > 0) {
-          log = await client.read("SearchContainerLog", {
-            server: serverParam,
-            container,
-            terms: search_terms,
-            combinator: (search_combinator as SearchCombinator) || SearchCombinator.Or,
-          });
-        } else {
-          log = await client.read("GetContainerLog", {
-            server: serverParam,
-            container,
-            tail: tail ?? 50,
-          });
-        }
+        const log = search_terms?.length
+          ? await client.read("SearchContainerLog", {
+              server: serverParam,
+              container,
+              terms: search_terms,
+              combinator:
+                (search_combinator as SearchCombinator) || SearchCombinator.Or,
+            })
+          : await client.read("GetContainerLog", {
+              server: serverParam,
+              container,
+              tail: tail ?? 50,
+            });
         return {
           content: [{ type: "text" as const, text: formatLog(log) }],
         };

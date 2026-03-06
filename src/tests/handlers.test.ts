@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { KomodoClient } from "../core/client.js";
 import { createServer } from "../core/server.js";
 import { registerAllTools } from "../tools/index.js";
-import { makeConfig, makeMockClient, connectTestClient } from "./helpers.js";
-import type { KomodoClient } from "../core/client.js";
-import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { connectTestClient, makeConfig, makeMockClient } from "./helpers.js";
 
 describe("handler: komodo_list_servers", () => {
   let cleanup: () => Promise<void>;
@@ -40,7 +40,9 @@ describe("handler: komodo_list_servers", () => {
   });
 
   it("returns isError when client throws", async () => {
-    vi.mocked(mockClient.read).mockRejectedValueOnce(new Error("connection refused"));
+    vi.mocked(mockClient.read).mockRejectedValueOnce(
+      new Error("connection refused"),
+    );
 
     const result = await mcpClient.callTool({
       name: "komodo_list_servers",
@@ -73,7 +75,12 @@ describe("handler: komodo_get_server", () => {
 
   it("calls client.read with correct operations", async () => {
     vi.mocked(mockClient.read)
-      .mockResolvedValueOnce({ name: "srv1", config: {}, info: { status: "OK" }, tags: [] })
+      .mockResolvedValueOnce({
+        name: "srv1",
+        config: {},
+        info: { status: "OK" },
+        tags: [],
+      })
       .mockResolvedValueOnce({ state: "idle" });
 
     const result = await mcpClient.callTool({
@@ -81,8 +88,12 @@ describe("handler: komodo_get_server", () => {
       arguments: { server: "srv1" },
     });
 
-    expect(mockClient.read).toHaveBeenCalledWith("GetServer", { server: "srv1" });
-    expect(mockClient.read).toHaveBeenCalledWith("GetServerActionState", { server: "srv1" });
+    expect(mockClient.read).toHaveBeenCalledWith("GetServer", {
+      server: "srv1",
+    });
+    expect(mockClient.read).toHaveBeenCalledWith("GetServerActionState", {
+      server: "srv1",
+    });
     expect(result.isError).toBeFalsy();
   });
 
@@ -99,7 +110,11 @@ describe("handler: komodo_get_server", () => {
 describe("handler: komodo_prune_docker (read-execute tier)", () => {
   it("is not registered in read-only mode", async () => {
     const server = createServer();
-    registerAllTools(server, makeMockClient(), makeConfig({ accessTier: "read-only" }));
+    registerAllTools(
+      server,
+      makeMockClient(),
+      makeConfig({ accessTier: "read-only" }),
+    );
     const { client, cleanup } = await connectTestClient(server);
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name)).not.toContain("komodo_prune_docker");
@@ -119,7 +134,9 @@ describe("handler: komodo_prune_docker (read-execute tier)", () => {
     });
 
     expect(result.isError).toBeFalsy();
-    expect(mockClient.execute).toHaveBeenCalledWith("PruneContainers", { server: "srv1" });
+    expect(mockClient.execute).toHaveBeenCalledWith("PruneContainers", {
+      server: "srv1",
+    });
     await cleanup();
   });
 });

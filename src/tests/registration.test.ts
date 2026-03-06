@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { logger } from "../core/logger.js";
 import { createServer } from "../core/server.js";
 import { registerAllTools } from "../tools/index.js";
-import { logger } from "../core/logger.js";
-import { makeConfig, makeMockClient, connectTestClient } from "./helpers.js";
+import { connectTestClient, makeConfig, makeMockClient } from "./helpers.js";
 
 describe("tool registration", () => {
   it("registers all tools at full tier", async () => {
@@ -16,19 +16,30 @@ describe("tool registration", () => {
 
   it("registers only read-only tools in read-only mode", async () => {
     const server = createServer();
-    registerAllTools(server, makeMockClient(), makeConfig({ accessTier: "read-only" }));
+    registerAllTools(
+      server,
+      makeMockClient(),
+      makeConfig({ accessTier: "read-only" }),
+    );
     const { client, cleanup } = await connectTestClient(server);
     const { tools } = await client.listTools();
     expect(tools).toHaveLength(36);
     for (const tool of tools) {
-      expect(tool.annotations?.readOnlyHint, `${tool.name} missing readOnlyHint`).toBe(true);
+      expect(
+        tool.annotations?.readOnlyHint,
+        `${tool.name} missing readOnlyHint`,
+      ).toBe(true);
     }
     await cleanup();
   });
 
   it("registers read-only + read-execute tools in read-execute mode", async () => {
     const server = createServer();
-    registerAllTools(server, makeMockClient(), makeConfig({ accessTier: "read-execute" }));
+    registerAllTools(
+      server,
+      makeMockClient(),
+      makeConfig({ accessTier: "read-execute" }),
+    );
     const { client, cleanup } = await connectTestClient(server);
     const { tools } = await client.listTools();
     expect(tools).toHaveLength(52);
@@ -37,12 +48,18 @@ describe("tool registration", () => {
 
   it("filters to only servers category tools", async () => {
     const server = createServer();
-    registerAllTools(server, makeMockClient(), makeConfig({ categories: ["servers"] }));
+    registerAllTools(
+      server,
+      makeMockClient(),
+      makeConfig({ categories: ["servers"] }),
+    );
     const { client, cleanup } = await connectTestClient(server);
     const { tools } = await client.listTools();
     expect(tools.length).toBeGreaterThan(0);
     for (const tool of tools) {
-      expect(tool.name).toMatch(/^komodo_.*server|^komodo_inspect_docker|^komodo_prune_docker|^komodo_delete_docker/);
+      expect(tool.name).toMatch(
+        /^komodo_.*server|^komodo_inspect_docker|^komodo_prune_docker|^komodo_delete_docker/,
+      );
     }
     await cleanup();
   });
@@ -54,7 +71,11 @@ describe("tool registration", () => {
     const { tools: allTools } = await fullConn.client.listTools();
 
     const filteredServer = createServer();
-    registerAllTools(filteredServer, makeMockClient(), makeConfig({ categories: ["servers", "stacks"] }));
+    registerAllTools(
+      filteredServer,
+      makeMockClient(),
+      makeConfig({ categories: ["servers", "stacks"] }),
+    );
     const filteredConn = await connectTestClient(filteredServer);
     const { tools: filteredTools } = await filteredConn.client.listTools();
 
@@ -79,11 +100,18 @@ describe("tool registration", () => {
 
     it("excludes titles when excludeToolTitles is true", async () => {
       const server = createServer();
-      registerAllTools(server, makeMockClient(), makeConfig({ excludeToolTitles: true }));
+      registerAllTools(
+        server,
+        makeMockClient(),
+        makeConfig({ excludeToolTitles: true }),
+      );
       const { client, cleanup } = await connectTestClient(server);
       const { tools } = await client.listTools();
       for (const tool of tools) {
-        expect(tool.title, `${tool.name} should not have title`).toBeUndefined();
+        expect(
+          tool.title,
+          `${tool.name} should not have title`,
+        ).toBeUndefined();
       }
       await cleanup();
     });
@@ -92,7 +120,11 @@ describe("tool registration", () => {
   describe("blacklist/whitelist", () => {
     it("blacklist excludes specific tools", async () => {
       const server = createServer();
-      registerAllTools(server, makeMockClient(), makeConfig({ toolBlacklist: ["komodo_list_servers"] }));
+      registerAllTools(
+        server,
+        makeMockClient(),
+        makeConfig({ toolBlacklist: ["komodo_list_servers"] }),
+      );
       const { client, cleanup } = await connectTestClient(server);
       const { tools } = await client.listTools();
       const names = tools.map((t) => t.name);
@@ -102,7 +134,11 @@ describe("tool registration", () => {
 
     it("blacklist does not affect non-blacklisted tools", async () => {
       const server = createServer();
-      registerAllTools(server, makeMockClient(), makeConfig({ toolBlacklist: ["komodo_list_servers"] }));
+      registerAllTools(
+        server,
+        makeMockClient(),
+        makeConfig({ toolBlacklist: ["komodo_list_servers"] }),
+      );
       const { client, cleanup } = await connectTestClient(server);
       const { tools } = await client.listTools();
       const names = tools.map((t) => t.name);
@@ -112,10 +148,14 @@ describe("tool registration", () => {
 
     it("whitelist includes tool excluded by tier filter", async () => {
       const server = createServer();
-      registerAllTools(server, makeMockClient(), makeConfig({
-        accessTier: "read-only",
-        toolWhitelist: ["komodo_write_resource"],
-      }));
+      registerAllTools(
+        server,
+        makeMockClient(),
+        makeConfig({
+          accessTier: "read-only",
+          toolWhitelist: ["komodo_write_resource"],
+        }),
+      );
       const { client, cleanup } = await connectTestClient(server);
       const { tools } = await client.listTools();
       const names = tools.map((t) => t.name);
@@ -125,10 +165,14 @@ describe("tool registration", () => {
 
     it("whitelist includes tool excluded by category filter", async () => {
       const server = createServer();
-      registerAllTools(server, makeMockClient(), makeConfig({
-        categories: ["servers"],
-        toolWhitelist: ["komodo_list_stacks"],
-      }));
+      registerAllTools(
+        server,
+        makeMockClient(),
+        makeConfig({
+          categories: ["servers"],
+          toolWhitelist: ["komodo_list_stacks"],
+        }),
+      );
       const { client, cleanup } = await connectTestClient(server);
       const { tools } = await client.listTools();
       const names = tools.map((t) => t.name);
@@ -138,10 +182,14 @@ describe("tool registration", () => {
 
     it("blacklist takes precedence over whitelist", async () => {
       const server = createServer();
-      registerAllTools(server, makeMockClient(), makeConfig({
-        toolBlacklist: ["komodo_list_servers"],
-        toolWhitelist: ["komodo_list_servers"],
-      }));
+      registerAllTools(
+        server,
+        makeMockClient(),
+        makeConfig({
+          toolBlacklist: ["komodo_list_servers"],
+          toolWhitelist: ["komodo_list_servers"],
+        }),
+      );
       const { client, cleanup } = await connectTestClient(server);
       const { tools } = await client.listTools();
       const names = tools.map((t) => t.name);
@@ -152,31 +200,49 @@ describe("tool registration", () => {
     it("blacklist + whitelist conflict logs warning", async () => {
       const spy = vi.spyOn(logger, "warn");
       const server = createServer();
-      registerAllTools(server, makeMockClient(), makeConfig({
-        toolBlacklist: ["komodo_list_servers"],
-        toolWhitelist: ["komodo_list_servers"],
-      }));
-      expect(spy).toHaveBeenCalledWith(expect.stringContaining("blacklist takes precedence"));
+      registerAllTools(
+        server,
+        makeMockClient(),
+        makeConfig({
+          toolBlacklist: ["komodo_list_servers"],
+          toolWhitelist: ["komodo_list_servers"],
+        }),
+      );
+      expect(spy).toHaveBeenCalledWith(
+        expect.stringContaining("blacklist takes precedence"),
+      );
       spy.mockRestore();
     });
 
     it("validates unknown blacklisted tool name", async () => {
       const spy = vi.spyOn(logger, "warn");
       const server = createServer();
-      registerAllTools(server, makeMockClient(), makeConfig({
-        toolBlacklist: ["nonexistent_tool_xyz"],
-      }));
-      expect(spy).toHaveBeenCalledWith(expect.stringContaining("does not match"));
+      registerAllTools(
+        server,
+        makeMockClient(),
+        makeConfig({
+          toolBlacklist: ["nonexistent_tool_xyz"],
+        }),
+      );
+      expect(spy).toHaveBeenCalledWith(
+        expect.stringContaining("does not match"),
+      );
       spy.mockRestore();
     });
 
     it("validates unknown whitelisted tool name", async () => {
       const spy = vi.spyOn(logger, "warn");
       const server = createServer();
-      registerAllTools(server, makeMockClient(), makeConfig({
-        toolWhitelist: ["nonexistent_tool_abc"],
-      }));
-      expect(spy).toHaveBeenCalledWith(expect.stringContaining("does not match"));
+      registerAllTools(
+        server,
+        makeMockClient(),
+        makeConfig({
+          toolWhitelist: ["nonexistent_tool_abc"],
+        }),
+      );
+      expect(spy).toHaveBeenCalledWith(
+        expect.stringContaining("does not match"),
+      );
       spy.mockRestore();
     });
   });
@@ -189,9 +255,9 @@ describe("tool registration", () => {
       const { tools } = await client.listTools();
       const tool = tools.find((t) => t.name === "komodo_list_servers");
       expect(tool).toBeDefined();
-      expect(tool!.annotations?.readOnlyHint).toBe(true);
-      expect(tool!.annotations?.destructiveHint).toBe(false);
-      expect(tool!.annotations?.idempotentHint).toBe(true);
+      expect(tool?.annotations?.readOnlyHint).toBe(true);
+      expect(tool?.annotations?.destructiveHint).toBe(false);
+      expect(tool?.annotations?.idempotentHint).toBe(true);
       await cleanup();
     });
 
@@ -202,9 +268,9 @@ describe("tool registration", () => {
       const { tools } = await client.listTools();
       const tool = tools.find((t) => t.name === "komodo_prune_docker");
       expect(tool).toBeDefined();
-      expect(tool!.annotations?.readOnlyHint).toBe(false);
-      expect(tool!.annotations?.destructiveHint).toBe(true);
-      expect(tool!.annotations?.idempotentHint).toBe(true);
+      expect(tool?.annotations?.readOnlyHint).toBe(false);
+      expect(tool?.annotations?.destructiveHint).toBe(true);
+      expect(tool?.annotations?.idempotentHint).toBe(true);
       await cleanup();
     });
   });
