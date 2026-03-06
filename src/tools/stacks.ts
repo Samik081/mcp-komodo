@@ -7,23 +7,27 @@
  * deployed to a specific server.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { SearchCombinator } from "../types/komodo.js";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
-  formatStackList,
+  formatLog,
   formatStackDetail,
+  formatStackList,
   formatStackServiceList,
   formatStacksSummary,
-  formatLog,
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
+import { SearchCombinator } from "../types/komodo.js";
 
-export function registerStackTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerStackTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   // -------------------------------------------------------------------------
   // komodo_list_stacks
   // -------------------------------------------------------------------------
@@ -124,17 +128,13 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
       services: z
         .array(z.string())
         .optional()
-        .describe(
-          "Filter to specific service names (default: all services)",
-        ),
+        .describe("Filter to specific service names (default: all services)"),
       tail: z
         .number()
         .min(1)
         .max(5000)
         .optional()
-        .describe(
-          "Number of log lines to return (default: 50, max: 5000)",
-        ),
+        .describe("Number of log lines to return (default: 50, max: 5000)"),
       search_terms: z
         .array(z.string())
         .optional()
@@ -144,7 +144,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
         .optional()
         .describe(
           "How to combine search terms: 'And' = all terms must match, " +
-          "'Or' = any term matches (default: 'Or')",
+            "'Or' = any term matches (default: 'Or')",
         ),
     },
     handler: async (args) => {
@@ -154,29 +154,24 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
       const search_terms = args.search_terms as string[] | undefined;
       const search_combinator = args.search_combinator as string | undefined;
       try {
-        let log;
-        if (search_terms && search_terms.length > 0) {
-          log = await client.read("SearchStackLog", {
-            stack,
-            services: services || [],
-            terms: search_terms,
-            combinator: (search_combinator as SearchCombinator) || SearchCombinator.Or,
-          });
-        } else {
-          log = await client.read("GetStackLog", {
-            stack,
-            services: services || [],
-            tail: tail || 50,
-          });
-        }
+        const log = search_terms?.length
+          ? await client.read("SearchStackLog", {
+              stack,
+              services: services || [],
+              terms: search_terms,
+              combinator:
+                (search_combinator as SearchCombinator) || SearchCombinator.Or,
+            })
+          : await client.read("GetStackLog", {
+              stack,
+              services: services || [],
+              tail: tail || 50,
+            });
         return {
           content: [{ type: "text" as const, text: formatLog(log) }],
         };
       } catch (error) {
-        return handleKomodoError(
-          `getting logs for stack '${stack}'`,
-          error,
-        );
+        return handleKomodoError(`getting logs for stack '${stack}'`, error);
       }
     },
   });
@@ -206,12 +201,20 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
       const stack = args.stack as string;
       const service = args.service as string;
       try {
-        const container = await client.read("InspectStackContainer", { stack, service });
+        const container = await client.read("InspectStackContainer", {
+          stack,
+          service,
+        });
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(container, null, 2) }],
+          content: [
+            { type: "text" as const, text: JSON.stringify(container, null, 2) },
+          ],
         };
       } catch (error) {
-        return handleKomodoError(`inspecting container for service '${service}' in stack '${stack}'`, error);
+        return handleKomodoError(
+          `inspecting container for service '${service}' in stack '${stack}'`,
+          error,
+        );
       }
     },
   });
@@ -400,10 +403,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
           ],
         };
       } catch (error) {
-        return handleKomodoError(
-          `pulling images for stack '${stack}'`,
-          error,
-        );
+        return handleKomodoError(`pulling images for stack '${stack}'`, error);
       }
     },
   });
@@ -435,7 +435,12 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
     },
     handler: async (args) => {
       const stack = args.stack as string;
-      const action = args.action as "start" | "stop" | "restart" | "pause" | "unpause";
+      const action = args.action as
+        | "start"
+        | "stop"
+        | "restart"
+        | "pause"
+        | "unpause";
       try {
         const operationMap = {
           start: "StartStack",
@@ -449,10 +454,7 @@ export function registerStackTools(server: McpServer, client: KomodoClient, conf
           content: [
             {
               type: "text" as const,
-              text: formatUpdateCreated(
-                update,
-                `${action} stack '${stack}'`,
-              ),
+              text: formatUpdateCreated(update, `${action} stack '${stack}'`),
             },
           ],
         };

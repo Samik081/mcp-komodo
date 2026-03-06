@@ -5,21 +5,21 @@
  * registerAllTools() function that wires them into the MCP server.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { validateToolLists } from "../core/tools.js";
+import { registerActionTools } from "./actions.js";
+import { registerAlerterTools } from "./alerters.js";
+import { registerBuilderTools } from "./builders.js";
+import { registerBuildTools } from "./builds.js";
+import { registerContainerTools } from "./containers.js";
+import { registerDeploymentTools } from "./deployments.js";
+import { registerProcedureTools } from "./procedures.js";
+import { registerRepoTools } from "./repos.js";
+import { registerResourceSyncTools } from "./resource-syncs.js";
 import { registerServerTools } from "./servers.js";
 import { registerStackTools } from "./stacks.js";
-import { registerDeploymentTools } from "./deployments.js";
-import { registerContainerTools } from "./containers.js";
-import { registerBuildTools } from "./builds.js";
-import { registerRepoTools } from "./repos.js";
-import { registerProcedureTools } from "./procedures.js";
-import { registerActionTools } from "./actions.js";
-import { registerBuilderTools } from "./builders.js";
-import { registerAlerterTools } from "./alerters.js";
-import { registerResourceSyncTools } from "./resource-syncs.js";
 import { registerUpdateTools } from "./updates.js";
 import { registerWriteTools } from "./write.js";
 

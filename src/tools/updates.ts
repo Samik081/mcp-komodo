@@ -6,18 +6,19 @@
  * stop, build, etc.), including full command logs with stdout/stderr.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
-import {
-  formatUpdateList,
-  formatUpdateDetail,
-} from "../core/formatters.js";
+import { formatUpdateDetail, formatUpdateList } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
 
-export function registerUpdateTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerUpdateTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   // -------------------------------------------------------------------------
   // komodo_list_updates
   // -------------------------------------------------------------------------
@@ -40,8 +41,16 @@ export function registerUpdateTools(server: McpServer, client: KomodoClient, con
     inputSchema: {
       target_type: z
         .enum([
-          "Server", "Stack", "Deployment", "Build", "Repo",
-          "Procedure", "Action", "Builder", "Alerter", "ResourceSync",
+          "Server",
+          "Stack",
+          "Deployment",
+          "Build",
+          "Repo",
+          "Procedure",
+          "Action",
+          "Builder",
+          "Alerter",
+          "ResourceSync",
           "ServerTemplate",
         ])
         .optional()
@@ -55,19 +64,21 @@ export function registerUpdateTools(server: McpServer, client: KomodoClient, con
         .optional()
         .describe(
           "Filter by operation name (e.g. 'DeployStack', 'Deploy', " +
-          "'RunBuild', 'StartStack', 'PullStack')",
+            "'RunBuild', 'StartStack', 'PullStack')",
         ),
       success: z
         .boolean()
         .optional()
-        .describe("Filter by success status (true = succeeded, false = failed)"),
+        .describe(
+          "Filter by success status (true = succeeded, false = failed)",
+        ),
       page: z
         .number()
         .min(0)
         .optional()
         .describe(
           "Page number for pagination (0 = most recent). Use the " +
-          "next_page value from a previous response to get more results.",
+            "next_page value from a previous response to get more results.",
         ),
     },
     handler: async (args) => {
@@ -80,8 +91,8 @@ export function registerUpdateTools(server: McpServer, client: KomodoClient, con
         const query: Record<string, unknown> = {};
         if (target_type) query["target.type"] = target_type;
         if (target_id) query["target.id"] = target_id;
-        if (operation) query["operation"] = operation;
-        if (success !== undefined) query["success"] = success;
+        if (operation) query.operation = operation;
+        if (success !== undefined) query.success = success;
 
         const response = await client.read("ListUpdates", {
           query: Object.keys(query).length > 0 ? query : undefined,
@@ -121,7 +132,11 @@ export function registerUpdateTools(server: McpServer, client: KomodoClient, con
       idempotentHint: true,
     },
     inputSchema: {
-      id: z.string().describe("Update ID (returned by execute operations or komodo_list_updates)"),
+      id: z
+        .string()
+        .describe(
+          "Update ID (returned by execute operations or komodo_list_updates)",
+        ),
     },
     handler: async (args) => {
       const id = args.id as string;

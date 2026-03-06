@@ -6,19 +6,23 @@
  * TOML configuration files in a Git repository.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
-  formatResourceSyncList,
   formatResourceSyncDetail,
+  formatResourceSyncList,
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
 
-export function registerResourceSyncTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerResourceSyncTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   // -------------------------------------------------------------------------
   // komodo_list_resource_syncs
   // -------------------------------------------------------------------------
@@ -37,10 +41,7 @@ export function registerResourceSyncTools(server: McpServer, client: KomodoClien
       idempotentHint: true,
     },
     inputSchema: {
-      tag: z
-        .string()
-        .optional()
-        .describe("Filter resource syncs by tag name"),
+      tag: z.string().optional().describe("Filter resource syncs by tag name"),
     },
     handler: async (args) => {
       const tag = args.tag as string | undefined;
@@ -146,10 +147,7 @@ export function registerResourceSyncTools(server: McpServer, client: KomodoClien
           ],
         };
       } catch (error) {
-        return handleKomodoError(
-          `triggering sync '${resource_sync}'`,
-          error,
-        );
+        return handleKomodoError(`triggering sync '${resource_sync}'`, error);
       }
     },
   });

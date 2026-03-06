@@ -6,19 +6,23 @@
  * using a Builder.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
-  formatRepoList,
   formatRepoDetail,
+  formatRepoList,
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
 
-export function registerRepoTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerRepoTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   // -------------------------------------------------------------------------
   // komodo_list_repos
   // -------------------------------------------------------------------------
@@ -134,10 +138,7 @@ export function registerRepoTools(server: McpServer, client: KomodoClient, confi
           content: [
             {
               type: "text" as const,
-              text: formatUpdateCreated(
-                update,
-                `${action} repo '${repo}'`,
-              ),
+              text: formatUpdateCreated(update, `${action} repo '${repo}'`),
             },
           ],
         };

@@ -6,19 +6,23 @@
  * into container images using a configured Builder.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
-  formatBuildList,
   formatBuildDetail,
+  formatBuildList,
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
 
-export function registerBuildTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerBuildTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   // -------------------------------------------------------------------------
   // komodo_list_builds
   // -------------------------------------------------------------------------
@@ -164,10 +168,7 @@ export function registerBuildTools(server: McpServer, client: KomodoClient, conf
           content: [
             {
               type: "text" as const,
-              text: formatUpdateCreated(
-                update,
-                `Cancelling build '${build}'`,
-              ),
+              text: formatUpdateCreated(update, `Cancelling build '${build}'`),
             },
           ],
         };

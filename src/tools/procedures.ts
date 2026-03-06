@@ -6,19 +6,23 @@
  * other Komodo operations (deploy, build, pull, etc.).
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
-  formatProcedureList,
   formatProcedureDetail,
+  formatProcedureList,
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
 
-export function registerProcedureTools(server: McpServer, client: KomodoClient, config: AppConfig): void {
+export function registerProcedureTools(
+  server: McpServer,
+  client: KomodoClient,
+  config: AppConfig,
+): void {
   // -------------------------------------------------------------------------
   // komodo_list_procedures
   // -------------------------------------------------------------------------
@@ -38,10 +42,7 @@ export function registerProcedureTools(server: McpServer, client: KomodoClient, 
       idempotentHint: true,
     },
     inputSchema: {
-      tag: z
-        .string()
-        .optional()
-        .describe("Filter procedures by tag name"),
+      tag: z.string().optional().describe("Filter procedures by tag name"),
     },
     handler: async (args) => {
       const tag = args.tag as string | undefined;
@@ -96,10 +97,7 @@ export function registerProcedureTools(server: McpServer, client: KomodoClient, 
           ],
         };
       } catch (error) {
-        return handleKomodoError(
-          `getting procedure '${procedure}'`,
-          error,
-        );
+        return handleKomodoError(`getting procedure '${procedure}'`, error);
       }
     },
   });
@@ -143,10 +141,7 @@ export function registerProcedureTools(server: McpServer, client: KomodoClient, 
           ],
         };
       } catch (error) {
-        return handleKomodoError(
-          `running procedure '${procedure}'`,
-          error,
-        );
+        return handleKomodoError(`running procedure '${procedure}'`, error);
       }
     },
   });

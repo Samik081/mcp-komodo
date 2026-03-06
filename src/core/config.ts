@@ -3,7 +3,7 @@
  * Reads required and optional config from process.env.
  */
 
-import type { AccessTier } from '../types/index.js';
+import type { AccessTier } from "../types/index.js";
 
 export interface AppConfig {
   url: string;
@@ -15,7 +15,7 @@ export interface AppConfig {
   toolWhitelist: string[] | null;
   excludeToolTitles: boolean;
   debug: boolean;
-  transport: 'stdio' | 'http';
+  transport: "stdio" | "http";
   httpPort: number;
   httpHost: string;
 }
@@ -35,21 +35,21 @@ function parseAccessTier(): AccessTier {
 }
 
 function parseCategories(value: string | undefined): string[] | null {
-  if (value === undefined || value === '') {
+  if (value === undefined || value === "") {
     return null;
   }
   return value
-    .split(',')
+    .split(",")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 }
 
 function parseToolList(value: string | undefined): string[] | null {
-  if (value === undefined || value === '') {
+  if (value === undefined || value === "") {
     return null;
   }
   return value
-    .split(',')
+    .split(",")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 }
@@ -67,35 +67,36 @@ export function loadConfig(): AppConfig {
   const apiKey = process.env.KOMODO_API_KEY;
   const apiSecret = process.env.KOMODO_API_SECRET;
 
-  const missing: string[] = [];
-  if (!url) missing.push('KOMODO_URL');
-  if (!apiKey) missing.push('KOMODO_API_KEY');
-  if (!apiSecret) missing.push('KOMODO_API_SECRET');
-
-  if (missing.length > 0) {
+  if (!url || !apiKey || !apiSecret) {
+    const missing: string[] = [];
+    if (!url) missing.push("KOMODO_URL");
+    if (!apiKey) missing.push("KOMODO_API_KEY");
+    if (!apiSecret) missing.push("KOMODO_API_SECRET");
     throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}. ` +
-        'Set these variables to connect to your Komodo instance.',
+      `Missing required environment variables: ${missing.join(", ")}. ` +
+        "Set these variables to connect to your Komodo instance.",
     );
   }
 
   const excludeToolTitles = process.env.MCP_EXCLUDE_TOOL_TITLES === "true";
 
   const transport =
-    process.env.MCP_TRANSPORT === 'http' ? ('http' as const) : ('stdio' as const);
-  const rawPort = process.env.MCP_PORT ?? '3000';
+    process.env.MCP_TRANSPORT === "http"
+      ? ("http" as const)
+      : ("stdio" as const);
+  const rawPort = process.env.MCP_PORT ?? "3000";
   const httpPort = parseInt(rawPort, 10);
-  if (isNaN(httpPort) || httpPort < 1 || httpPort > 65535) {
+  if (Number.isNaN(httpPort) || httpPort < 1 || httpPort > 65535) {
     throw new Error(
       `Invalid MCP_PORT: "${rawPort}". Must be an integer between 1 and 65535.`,
     );
   }
-  const httpHost = process.env.MCP_HOST ?? '0.0.0.0';
+  const httpHost = process.env.MCP_HOST ?? "0.0.0.0";
 
   return {
-    url: url!.replace(/\/+$/, ''),
-    apiKey: apiKey!,
-    apiSecret: apiSecret!,
+    url: url.replace(/\/+$/, ""),
+    apiKey,
+    apiSecret,
     accessTier: parseAccessTier(),
     categories: parseCategories(process.env.KOMODO_CATEGORIES),
     toolBlacklist: parseToolList(process.env.KOMODO_TOOL_BLACKLIST),

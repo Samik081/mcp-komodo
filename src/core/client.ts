@@ -10,7 +10,11 @@
  */
 
 import type { AppConfig } from "./config.js";
-import { KomodoError, registerSensitivePattern, sanitizeMessage } from "./errors.js";
+import {
+  KomodoError,
+  registerSensitivePattern,
+  sanitizeMessage,
+} from "./errors.js";
 import { logger } from "./logger.js";
 
 /** Request timeout in milliseconds. */
@@ -72,7 +76,7 @@ export class KomodoClient {
         );
       }
 
-      const data = await response.json() as { version?: string };
+      const data = (await response.json()) as { version?: string };
       logger.info(
         `Connected to Komodo at ${this.baseUrl} (version: ${data.version ?? "unknown"})`,
       );
@@ -108,7 +112,7 @@ export class KomodoClient {
       if (!response.ok) {
         let detail = `${response.status} ${response.statusText}`;
         try {
-          const errBody = await response.json() as { error?: string };
+          const errBody = (await response.json()) as { error?: string };
           if (errBody.error) {
             detail += ` — ${errBody.error}`;
           }
@@ -125,9 +129,7 @@ export class KomodoClient {
     } catch (err) {
       if (err instanceof KomodoError) throw err;
       throw new KomodoError(
-        sanitizeMessage(
-          err instanceof Error ? err.message : String(err),
-        ),
+        sanitizeMessage(err instanceof Error ? err.message : String(err)),
       );
     }
   }
