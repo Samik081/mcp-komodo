@@ -1,6 +1,6 @@
 {
   "name": "io.github.samik081/mcp-komodo",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "title": "Komodo MCP Server",
   "description": "MCP server for the Komodo DevOps platform — manage servers, stacks, deployments, builds, and more through AI coding tools",
   "license": "MIT",
@@ -12,7 +12,7 @@
     {
       "registryType": "npm",
       "identifier": "@samik081/mcp-komodo",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "runtimeHint": "node",
       "environment_variables": [
         {
@@ -36,8 +36,8 @@
     },
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/samik081/mcp-komodo:0.5.0",
-      "version": "0.5.0",
+      "identifier": "ghcr.io/samik081/mcp-komodo:0.5.1",
+      "version": "0.5.1",
       "runtimeHint": "docker",
       "environment_variables": [
         {
