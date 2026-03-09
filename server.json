@@ -6,57 +6,61 @@
   "description": "Manage Komodo through AI assistants",
   "license": "MIT",
   "repository": {
-    "type": "git",
-    "url": "https://github.com/Samik081/mcp-komodo.git"
+    "url": "https://github.com/Samik081/mcp-komodo",
+    "source": "github"
   },
   "packages": [
     {
       "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@samik081/mcp-komodo",
       "version": "0.5.3",
       "runtimeHint": "node",
-      "environment_variables": [
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
         {
           "name": "KOMODO_URL",
           "description": "URL of the Komodo instance (e.g. https://komodo.example.com)",
-          "required": true
+          "isRequired": true
         },
         {
           "name": "KOMODO_API_KEY",
           "description": "Komodo API key",
-          "required": true,
-          "secret": true
+          "isRequired": true,
+          "isSecret": true
         },
         {
           "name": "KOMODO_API_SECRET",
           "description": "Komodo API secret",
-          "required": true,
-          "secret": true
+          "isRequired": true,
+          "isSecret": true
         }
       ]
     },
     {
       "registryType": "oci",
+      "registryBaseUrl": "https://ghcr.io",
       "identifier": "ghcr.io/samik081/mcp-komodo:0.5.3",
       "version": "0.5.3",
       "runtimeHint": "docker",
-      "environment_variables": [
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
         {
           "name": "KOMODO_URL",
           "description": "URL of the Komodo instance (e.g. https://komodo.example.com)",
-          "required": true
+          "isRequired": true
         },
         {
           "name": "KOMODO_API_KEY",
           "description": "Komodo API key",
-          "required": true,
-          "secret": true
+          "isRequired": true,
+          "isSecret": true
         },
         {
           "name": "KOMODO_API_SECRET",
           "description": "Komodo API secret",
-          "required": true,
-          "secret": true
+          "isRequired": true,
+          "isSecret": true
         }
       ]
     }
