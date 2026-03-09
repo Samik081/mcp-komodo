@@ -1,8 +1,9 @@
 {
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.samik081/mcp-komodo",
   "version": "0.5.1",
   "title": "Komodo MCP Server",
-  "description": "MCP server for the Komodo DevOps platform — manage servers, stacks, deployments, builds, and more through AI coding tools",
+  "description": "Manage Komodo through AI assistants",
   "license": "MIT",
   "repository": {
     "type": "git",
