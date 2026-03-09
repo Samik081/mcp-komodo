@@ -1,7 +1,7 @@
 {
   "name": "@samik081/mcp-komodo",
   "mcpName": "io.github.Samik081/mcp-komodo",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Manage Komodo through AI assistants",
   "type": "module",
   "main": "./dist/index.js",
