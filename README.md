@@ -7,11 +7,9 @@
 
 MCP server for the [Komodo](https://komo.do) DevOps platform. Manage servers, stacks, deployments, builds, and more through natural language in Cursor, Claude Code, and Claude Desktop.
 
-> **Disclaimer:** Most of this code has been AI-generated and has not been fully tested yet. I created this project for my own needs and plan to continue improving its quality, but it may be buggy in the early stages. If you find a bug, feel free to [open an issue](https://github.com/Samik081/mcp-komodo/issues) -- I'll try to work on it in my spare time.
-
 ## Features
 
-- **53 tools** across **13 resource categories** covering the complete Komodo DevOps API
+- **53 tools** across **13 categories** covering the complete Komodo DevOps API
 - **Three access tiers** (`read-only`, `read-execute`, `full`) for granular control
 - **Category filtering** via `KOMODO_CATEGORIES` to expose only the tools you need
 - **Zero HTTP dependencies** -- uses the official `komodo_client` SDK
@@ -160,7 +158,7 @@ Set `KOMODO_ACCESS_TIER` to `read-only`, `read-execute`, or `full` (default: `fu
 | `KOMODO_CATEGORIES` | No | *(all)* | Comma-separated category allowlist (e.g., `servers,stacks,builds`) |
 | `KOMODO_TOOL_BLACKLIST` | No | *(none)* | Comma-separated list of tool names to exclude (e.g., `komodo_destroy_stack`) |
 | `KOMODO_TOOL_WHITELIST` | No | *(none)* | Comma-separated list of tool names to force-include, bypassing access tier and category filters |
-| `DEBUG` | No | -- | Set to any value to enable debug logging to stderr |
+| `DEBUG` | No | `false` | Enable debug logging to stderr |
 | `MCP_TRANSPORT` | No | `stdio` | Transport mode: `stdio` (default) or `http` |
 | `MCP_PORT` | No | `3000` | HTTP server port (only used when `MCP_TRANSPORT=http`) |
 | `MCP_HOST` | No | `0.0.0.0` | HTTP server bind address (only used when `MCP_TRANSPORT=http`) |
@@ -174,162 +172,162 @@ Generate API keys in the Komodo UI under **Settings > API Keys**.
 
 ## Tools
 
-mcp-komodo provides 53 tools organized by category. Each tool's Access column shows the minimum tier required: `read-only` (available in all tiers), `read-execute` (requires `read-execute` or `full`), or `full` (requires `full` tier only).
+mcp-komodo provides 53 tools organized by category. Each tool's Access column shows the minimum tier required: `read-only` (available in all tiers), `read-execute` (requires `read-execute` or `full`), or `full` (requires `full` tier only). The Hints column shows tool behavior: `read-only` (no state changes), `destructive` (modifies existing state), `idempotent` (same result if called twice).
 
 <details>
 <summary>Servers (10 tools)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_list_servers` | List all servers with status and region | read-only |
-| `komodo_get_server` | Get server configuration, status, and action state | read-only |
-| `komodo_get_server_stats` | Get CPU, memory, disk usage, and load averages | read-only |
-| `komodo_get_server_info` | Get OS details, hardware info, and running processes | read-only |
-| `komodo_inspect_docker_container` | Inspect a Docker container (equivalent to docker inspect) | read-only |
-| `komodo_inspect_docker_image` | Inspect a Docker image (equivalent to docker image inspect) | read-only |
-| `komodo_inspect_docker_network` | Inspect a Docker network (equivalent to docker network inspect) | read-only |
-| `komodo_inspect_docker_volume` | Inspect a Docker volume (equivalent to docker volume inspect) | read-only |
-| `komodo_prune_docker` | Prune unused Docker resources on a server | read-execute |
-| `komodo_delete_docker_resource` | Delete a specific Docker image, volume, or network | read-execute |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_servers` | List all servers with status and region | read-only | read-only, idempotent |
+| `komodo_get_server` | Get server configuration, status, and action state | read-only | read-only, idempotent |
+| `komodo_get_server_stats` | Get CPU, memory, disk usage, and load averages | read-only | read-only, idempotent |
+| `komodo_get_server_info` | Get OS details, hardware info, and running processes | read-only | read-only, idempotent |
+| `komodo_inspect_docker_container` | Inspect a Docker container (equivalent to docker inspect) | read-only | read-only, idempotent |
+| `komodo_inspect_docker_image` | Inspect a Docker image (equivalent to docker image inspect) | read-only | read-only, idempotent |
+| `komodo_inspect_docker_network` | Inspect a Docker network (equivalent to docker network inspect) | read-only | read-only, idempotent |
+| `komodo_inspect_docker_volume` | Inspect a Docker volume (equivalent to docker volume inspect) | read-only | read-only, idempotent |
+| `komodo_prune_docker` | Prune unused Docker resources on a server | read-execute | destructive, idempotent |
+| `komodo_delete_docker_resource` | Delete a specific Docker image, volume, or network | read-execute | destructive |
 
 </details>
 
 <details>
 <summary>Stacks (10 tools)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_list_stacks` | List all stacks with state, server, and service count | read-only |
-| `komodo_get_stack` | Get stack configuration, services, and action state | read-only |
-| `komodo_list_stack_services` | List services in a stack with image, container state, and update availability | read-only |
-| `komodo_get_stacks_summary` | Get aggregate counts of all stacks by state | read-only |
-| `komodo_get_stack_log` | Get logs from stack services, with optional search | read-only |
-| `komodo_inspect_stack_container` | Inspect a container for a specific service in a stack | read-only |
-| `komodo_deploy_stack` | Deploy or redeploy a stack | read-execute |
-| `komodo_pull_stack` | Pull latest images without redeploying (docker compose pull) | read-execute |
-| `komodo_stack_lifecycle` | Start, stop, restart, pause, or unpause a stack | read-execute |
-| `komodo_destroy_stack` | Permanently destroy a stack | read-execute |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_stacks` | List all stacks with state, server, and service count | read-only | read-only, idempotent |
+| `komodo_get_stack` | Get stack configuration, services, and action state | read-only | read-only, idempotent |
+| `komodo_list_stack_services` | List services in a stack with image, container state, and update availability | read-only | read-only, idempotent |
+| `komodo_get_stacks_summary` | Get aggregate counts of all stacks by state | read-only | read-only, idempotent |
+| `komodo_get_stack_log` | Get logs from stack services, with optional search | read-only | read-only, idempotent |
+| `komodo_inspect_stack_container` | Inspect a container for a specific service in a stack | read-only | read-only, idempotent |
+| `komodo_deploy_stack` | Deploy or redeploy a stack | read-execute | destructive |
+| `komodo_pull_stack` | Pull latest images without redeploying (docker compose pull) | read-execute | idempotent |
+| `komodo_stack_lifecycle` | Start, stop, restart, pause, or unpause a stack | read-execute | destructive |
+| `komodo_destroy_stack` | Permanently destroy a stack | read-execute | destructive |
 
 </details>
 
 <details>
 <summary>Deployments (9 tools)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_list_deployments` | List all deployments with state, image, and server | read-only |
-| `komodo_get_deployment` | Get deployment configuration, container status, and action state | read-only |
-| `komodo_get_deployments_summary` | Get aggregate counts of all deployments by state | read-only |
-| `komodo_get_deployment_log` | Get container logs, with optional search | read-only |
-| `komodo_inspect_deployment_container` | Inspect the container for a deployment (equivalent to docker inspect) | read-only |
-| `komodo_deploy_deployment` | Deploy with latest image and configuration | read-execute |
-| `komodo_pull_deployment` | Pull latest image without redeploying (docker pull) | read-execute |
-| `komodo_deployment_lifecycle` | Start, stop, restart, pause, or unpause a deployment | read-execute |
-| `komodo_destroy_deployment` | Permanently destroy a deployment | read-execute |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_deployments` | List all deployments with state, image, and server | read-only | read-only, idempotent |
+| `komodo_get_deployment` | Get deployment configuration, container status, and action state | read-only | read-only, idempotent |
+| `komodo_get_deployments_summary` | Get aggregate counts of all deployments by state | read-only | read-only, idempotent |
+| `komodo_get_deployment_log` | Get container logs, with optional search | read-only | read-only, idempotent |
+| `komodo_inspect_deployment_container` | Inspect the container for a deployment (equivalent to docker inspect) | read-only | read-only, idempotent |
+| `komodo_deploy_deployment` | Deploy with latest image and configuration | read-execute | destructive |
+| `komodo_pull_deployment` | Pull latest image without redeploying (docker pull) | read-execute | idempotent |
+| `komodo_deployment_lifecycle` | Start, stop, restart, pause, or unpause a deployment | read-execute | destructive |
+| `komodo_destroy_deployment` | Permanently destroy a deployment | read-execute | destructive |
 
 </details>
 
 <details>
 <summary>Containers (1 tool)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_get_container_log` | Get logs from any Docker container on a server | read-only |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_get_container_log` | Get logs from any Docker container on a server | read-only | read-only, idempotent |
 
 </details>
 
 <details>
 <summary>Builds (4 tools)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_list_builds` | List all build configurations with version info | read-only |
-| `komodo_get_build` | Get build configuration, builder, and action state | read-only |
-| `komodo_run_build` | Run a build to create a Docker image | read-execute |
-| `komodo_cancel_build` | Cancel a running build | read-execute |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_builds` | List all build configurations with version info | read-only | read-only, idempotent |
+| `komodo_get_build` | Get build configuration, builder, and action state | read-only | read-only, idempotent |
+| `komodo_run_build` | Run a build to create a Docker image | read-execute | — |
+| `komodo_cancel_build` | Cancel a running build | read-execute | destructive, idempotent |
 
 </details>
 
 <details>
 <summary>Repos (3 tools)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_list_repos` | List all repos with URL, server, and state | read-only |
-| `komodo_get_repo` | Get repo configuration, branch, and action state | read-only |
-| `komodo_repo_clone_pull` | Clone or pull a repo on its target server | read-execute |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_repos` | List all repos with URL, server, and state | read-only | read-only, idempotent |
+| `komodo_get_repo` | Get repo configuration, branch, and action state | read-only | read-only, idempotent |
+| `komodo_repo_clone_pull` | Clone or pull a repo on its target server | read-execute | destructive |
 
 </details>
 
 <details>
 <summary>Procedures (3 tools)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_list_procedures` | List all procedures with state | read-only |
-| `komodo_get_procedure` | Get procedure stages, operations, and action state | read-only |
-| `komodo_run_procedure` | Run a procedure (executes all stages) | read-execute |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_procedures` | List all procedures with state | read-only | read-only, idempotent |
+| `komodo_get_procedure` | Get procedure stages, operations, and action state | read-only | read-only, idempotent |
+| `komodo_run_procedure` | Run a procedure (executes all stages) | read-execute | destructive |
 
 </details>
 
 <details>
 <summary>Actions (3 tools)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_list_actions` | List all actions with state | read-only |
-| `komodo_get_action` | Get action configuration and action state | read-only |
-| `komodo_run_action` | Run a custom TypeScript/Deno action | read-execute |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_actions` | List all actions with state | read-only | read-only, idempotent |
+| `komodo_get_action` | Get action configuration and action state | read-only | read-only, idempotent |
+| `komodo_run_action` | Run a custom TypeScript/Deno action | read-execute | destructive |
 
 </details>
 
 <details>
 <summary>Builders (2 tools)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_list_builders` | List all builders with type | read-only |
-| `komodo_get_builder` | Get builder type, server configuration, and state | read-only |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_builders` | List all builders with type | read-only | read-only, idempotent |
+| `komodo_get_builder` | Get builder type, server configuration, and state | read-only | read-only, idempotent |
 
 </details>
 
 <details>
 <summary>Alerters (2 tools)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_list_alerters` | List all alerters with type | read-only |
-| `komodo_get_alerter` | Get alerter endpoint type, configuration, and status | read-only |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_alerters` | List all alerters with type | read-only | read-only, idempotent |
+| `komodo_get_alerter` | Get alerter endpoint type, configuration, and status | read-only | read-only, idempotent |
 
 </details>
 
 <details>
 <summary>Resource Syncs (3 tools)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_list_resource_syncs` | List all resource syncs with state and repo info | read-only |
-| `komodo_get_resource_sync` | Get sync configuration, managed resources, and state | read-only |
-| `komodo_trigger_sync` | Trigger a GitOps sync from the Git repo | read-execute |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_resource_syncs` | List all resource syncs with state and repo info | read-only | read-only, idempotent |
+| `komodo_get_resource_sync` | Get sync configuration, managed resources, and state | read-only | read-only, idempotent |
+| `komodo_trigger_sync` | Trigger a GitOps sync from the Git repo | read-execute | destructive |
 
 </details>
 
 <details>
 <summary>Updates (2 tools)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_list_updates` | List operation history with filters for resource type, target, operation, and success | read-only |
-| `komodo_get_update` | Get full operation details including logs with stdout/stderr for each stage | read-only |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_updates` | List operation history with filters for resource type, target, operation, and success | read-only | read-only, idempotent |
+| `komodo_get_update` | Get full operation details including logs with stdout/stderr for each stage | read-only | read-only, idempotent |
 
 </details>
 
 <details>
 <summary>Write (1 tool)</summary>
 
-| Tool | Description | Access |
-|------|-------------|--------|
-| `komodo_write_resource` | Create, update, or delete any Komodo resource | full |
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_write_resource` | Create, update, or delete any Komodo resource | full | destructive |
 
 </details>
 
@@ -361,20 +359,17 @@ Once configured, ask your AI tool questions in natural language:
 
 ## Troubleshooting
 
-**Connection refused**
+### Connection refused
+
 Check that `KOMODO_URL` is correct and that Komodo Core is reachable from where the MCP server is running. The server validates the connection on startup, so if it started successfully, the URL was valid at that time.
 
-**Invalid credentials / 401 Unauthorized**
+### Invalid credentials / 401 Unauthorized
+
 Verify your API key and secret are correct. Check that the key has not been revoked or expired in the Komodo UI under Settings > API Keys.
 
-**Tools not showing up in your AI tool**
+### Tools not showing up
+
 Check your access tier setting. In `read-only` mode, only 36 tools are registered. In `read-execute` mode, 52 tools are registered. Use `full` (or omit `KOMODO_ACCESS_TIER`) for all 53 tools. Check `KOMODO_CATEGORIES` -- only tools in listed categories are registered. Also verify the server started without errors by checking stderr output.
-
-**Node.js version errors**
-mcp-komodo requires Node.js >= 18.0.0. Check your version with `node --version`.
-
-**Parse errors or "invalid JSON" in MCP client**
-This typically means something is writing to stdout besides the MCP server. Ensure no other tools, shell profiles, or startup scripts print to stdout when launching the server. The MCP protocol uses stdout for JSON-RPC communication. All mcp-komodo logging goes to stderr.
 
 ## Development
 
@@ -394,4 +389,4 @@ npm run inspect
 
 ## License
 
-MIT
+[MIT](LICENSE)
