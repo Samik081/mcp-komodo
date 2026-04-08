@@ -333,7 +333,7 @@ export function registerWriteTools(
             "which uses name).",
         ),
       config: z
-        .record(z.any())
+        .record(z.string(), z.any())
         .optional()
         .describe(
           "JSON configuration object. Required for update, optional for " +
