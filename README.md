@@ -17,6 +17,10 @@ MCP server for the [Komodo](https://komo.do) DevOps platform. Manage servers, st
 - **Remote MCP** via HTTP transport (`MCP_TRANSPORT=http`) using the Streamable HTTP protocol
 - **TypeScript/ESM** with full type safety
 
+## API Compatibility
+
+Built for Komodo **1.19.5**.
+
 ## Quick Start
 
 Run the server directly with npx:
