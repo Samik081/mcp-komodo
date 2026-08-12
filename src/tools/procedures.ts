@@ -17,6 +17,7 @@ import {
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
+import { resolveUpdate, waitInputSchema } from "../core/updates.js";
 
 export function registerProcedureTools(
   server: McpServer,
@@ -124,17 +125,22 @@ export function registerProcedureTools(
     },
     inputSchema: {
       procedure: z.string().describe("Procedure name or ID"),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const procedure = args.procedure as string;
       try {
         const update = await client.execute("RunProcedure", { procedure });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
               text: formatUpdateCreated(
-                update,
+                resolved,
                 `Running procedure '${procedure}'`,
               ),
             },

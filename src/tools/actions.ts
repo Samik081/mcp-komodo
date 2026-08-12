@@ -16,6 +16,7 @@ import {
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
+import { resolveUpdate, waitInputSchema } from "../core/updates.js";
 
 export function registerActionTools(
   server: McpServer,
@@ -119,16 +120,21 @@ export function registerActionTools(
     },
     inputSchema: {
       action: z.string().describe("Action name or ID"),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const action = args.action as string;
       try {
         const update = await client.execute("RunAction", { action });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
-              text: formatUpdateCreated(update, `Running action '${action}'`),
+              text: formatUpdateCreated(resolved, `Running action '${action}'`),
             },
           ],
         };

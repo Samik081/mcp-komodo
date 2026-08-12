@@ -9,10 +9,10 @@ MCP server for the [Komodo](https://komo.do) DevOps platform. Manage servers, st
 
 ## Features
 
-- **53 tools** across **13 categories** covering the complete Komodo DevOps API
+- **63 tools** across **14 categories** covering the complete Komodo DevOps API
 - **Three access tiers** (`read-only`, `read-execute`, `full`) for granular control
 - **Category filtering** via `KOMODO_CATEGORIES` to expose only the tools you need
-- **Zero HTTP dependencies** -- uses the official `komodo_client` SDK
+- **Zero HTTP dependencies** -- lightweight native-fetch client, no SDK required
 - **Docker images** for `linux/amd64` and `linux/arm64` on [GHCR](https://ghcr.io/samik081/mcp-komodo)
 - **Remote MCP** via HTTP transport (`MCP_TRANSPORT=http`) using the Streamable HTTP protocol
 - **TypeScript/ESM** with full type safety
@@ -137,15 +137,15 @@ Control which tools are available using the `KOMODO_ACCESS_TIER` environment var
 
 | Tier | Tools | Description |
 |------|-------|-------------|
-| `full` (default) | 53 | Read, execute, and write -- full control |
-| `read-execute` | 52 | Read and execute -- no resource creation/deletion via write tool |
-| `read-only` | 36 | Read only -- safe for exploration, no state changes |
+| `full` (default) | 63 | Read, execute, and write -- full control |
+| `read-execute` | 55 | Read and execute -- no resource creation/deletion, no user administration |
+| `read-only` | 39 | Read only -- safe for exploration, no state changes |
 
 **Tier details:**
 
-- **full**: All 53 tools. Includes `komodo_write_resource` for creating, updating, and deleting Komodo resources.
-- **read-execute**: 52 tools. All read tools plus execute tools (deploy, pull, lifecycle, run, etc.). The `komodo_write_resource` tool is hidden.
-- **read-only**: 36 tools. List, get, logs, inspect, stats, summaries, and operation history only. All execute and write tools are hidden.
+- **full**: All 63 tools. Includes `komodo_write_resource` for creating, updating, and deleting Komodo resources, plus the user administration tools (service users, API keys, permissions).
+- **read-execute**: 55 tools. All read tools plus execute tools (deploy, pull, lifecycle, run, etc.). The `komodo_write_resource` tool and the user administration write tools are hidden.
+- **read-only**: 39 tools. List, get, logs, inspect, stats, summaries, operation history, and user/permission reads only. All execute and write tools are hidden.
 
 Tools that are not available in your tier are not registered with the MCP server. They will not appear in your AI tool's tool list, keeping the context clean.
 
@@ -172,11 +172,13 @@ Generate API keys in the Komodo UI under **Settings > API Keys**.
 
 ### Available Categories
 
-`servers`, `stacks`, `deployments`, `containers`, `builds`, `repos`, `procedures`, `actions`, `builders`, `alerters`, `resource-syncs`, `updates`, `write`
+`servers`, `stacks`, `deployments`, `containers`, `builds`, `repos`, `procedures`, `actions`, `builders`, `alerters`, `resource-syncs`, `updates`, `users`, `write`
 
 ## Tools
 
-mcp-komodo provides 53 tools organized by category. Each tool's Access column shows the minimum tier required: `read-only` (available in all tiers), `read-execute` (requires `read-execute` or `full`), or `full` (requires `full` tier only). The Hints column shows tool behavior: `read-only` (no state changes), `destructive` (modifies existing state), `idempotent` (same result if called twice).
+mcp-komodo provides 63 tools organized by category. Each tool's Access column shows the minimum tier required: `read-only` (available in all tiers), `read-execute` (requires `read-execute` or `full`), or `full` (requires `full` tier only). The Hints column shows tool behavior: `read-only` (no state changes), `destructive` (modifies existing state), `idempotent` (same result if called twice).
+
+All 16 execute tools wait for the operation to complete and report its real outcome by default; pass `wait: false` for fire-and-forget, or `wait_timeout_seconds` to bound the wait (default 45s).
 
 <details>
 <summary>Servers (10 tools)</summary>
@@ -187,8 +189,8 @@ mcp-komodo provides 53 tools organized by category. Each tool's Access column sh
 | `komodo_get_server` | Get server configuration, status, and action state | read-only | read-only, idempotent |
 | `komodo_get_server_stats` | Get CPU, memory, disk usage, and load averages | read-only | read-only, idempotent |
 | `komodo_get_server_info` | Get OS details, hardware info, and running processes | read-only | read-only, idempotent |
-| `komodo_inspect_docker_container` | Inspect a Docker container (equivalent to docker inspect) | read-only | read-only, idempotent |
-| `komodo_inspect_docker_image` | Inspect a Docker image (equivalent to docker image inspect) | read-only | read-only, idempotent |
+| `komodo_inspect_docker_container` | Inspect a Docker container (`docker inspect` payload); env values render as `sha256:<12-hex>` digests unless `show_env_values: true` -- redaction covers `Env` arrays only, so labels, cmd, and mounts are returned unredacted | read-only | read-only, idempotent |
+| `komodo_inspect_docker_image` | Inspect a Docker image (`docker image inspect` payload); baked-in env values render as `sha256:<12-hex>` digests unless `show_env_values: true` -- redaction covers `Env` arrays only, so labels, cmd, and layers are returned unredacted | read-only | read-only, idempotent |
 | `komodo_inspect_docker_network` | Inspect a Docker network (equivalent to docker network inspect) | read-only | read-only, idempotent |
 | `komodo_inspect_docker_volume` | Inspect a Docker volume (equivalent to docker volume inspect) | read-only | read-only, idempotent |
 | `komodo_prune_docker` | Prune unused Docker resources on a server | read-execute | destructive, idempotent |
@@ -206,10 +208,10 @@ mcp-komodo provides 53 tools organized by category. Each tool's Access column sh
 | `komodo_list_stack_services` | List services in a stack with image, container state, and update availability | read-only | read-only, idempotent |
 | `komodo_get_stacks_summary` | Get aggregate counts of all stacks by state | read-only | read-only, idempotent |
 | `komodo_get_stack_log` | Get logs from stack services, with optional search | read-only | read-only, idempotent |
-| `komodo_inspect_stack_container` | Inspect a container for a specific service in a stack | read-only | read-only, idempotent |
+| `komodo_inspect_stack_container` | Inspect a container for a specific service in a stack (`docker inspect` payload); env values render as `sha256:<12-hex>` digests unless `show_env_values: true` -- redaction covers `Env` arrays only, so labels, cmd, and mounts are returned unredacted | read-only | read-only, idempotent |
 | `komodo_deploy_stack` | Deploy or redeploy a stack | read-execute | destructive |
 | `komodo_pull_stack` | Pull latest images without redeploying (docker compose pull) | read-execute | idempotent |
-| `komodo_stack_lifecycle` | Start, stop, restart, pause, or unpause a stack | read-execute | destructive |
+| `komodo_stack_lifecycle` | Start, stop, restart, pause, or unpause a stack; optionally targets specific services | read-execute | destructive |
 | `komodo_destroy_stack` | Permanently destroy a stack | read-execute | destructive |
 
 </details>
@@ -223,7 +225,7 @@ mcp-komodo provides 53 tools organized by category. Each tool's Access column sh
 | `komodo_get_deployment` | Get deployment configuration, container status, and action state | read-only | read-only, idempotent |
 | `komodo_get_deployments_summary` | Get aggregate counts of all deployments by state | read-only | read-only, idempotent |
 | `komodo_get_deployment_log` | Get container logs, with optional search | read-only | read-only, idempotent |
-| `komodo_inspect_deployment_container` | Inspect the container for a deployment (equivalent to docker inspect) | read-only | read-only, idempotent |
+| `komodo_inspect_deployment_container` | Inspect the container for a deployment (`docker inspect` payload); env values render as `sha256:<12-hex>` digests unless `show_env_values: true` -- redaction covers `Env` arrays only, so labels, cmd, and mounts are returned unredacted | read-only | read-only, idempotent |
 | `komodo_deploy_deployment` | Deploy with latest image and configuration | read-execute | destructive |
 | `komodo_pull_deployment` | Pull latest image without redeploying (docker pull) | read-execute | idempotent |
 | `komodo_deployment_lifecycle` | Start, stop, restart, pause, or unpause a deployment | read-execute | destructive |
@@ -327,6 +329,26 @@ mcp-komodo provides 53 tools organized by category. Each tool's Access column sh
 </details>
 
 <details>
+<summary>Users (10 tools)</summary>
+
+All 10 user tools require a Komodo admin account -- Komodo rejects them for non-admin API keys regardless of the configured access tier.
+
+| Tool | Description | Access | Hints |
+|------|-------------|--------|-------|
+| `komodo_list_users` | List Komodo users, optionally filtering service users | read-only | read-only, idempotent |
+| `komodo_list_api_keys_for_service_user` | List a service user's API keys (secrets are never returned) | read-only | read-only, idempotent |
+| `komodo_list_permissions` | List permissions granted to a user or user group | read-only | read-only, idempotent |
+| `komodo_create_service_user` | Create a service user for automation | full | — |
+| `komodo_delete_user` | Delete a user by ID or username | full | destructive |
+| `komodo_create_api_key_for_service_user` | Create an API key for a service user (the secret is returned once) | full | — |
+| `komodo_delete_api_key_for_service_user` | Delete a service user's API key | full | destructive |
+| `komodo_update_user_base_permissions` | Update a user's enabled / create-servers / create-builds flags | full | destructive, idempotent |
+| `komodo_update_permission_on_resource_type` | Set a user or group's base permission on all resources of a type | full | destructive, idempotent |
+| `komodo_update_permission_on_target` | Set a user or group's permission on one specific resource | full | destructive, idempotent |
+
+</details>
+
+<details>
 <summary>Write (1 tool)</summary>
 
 | Tool | Description | Access | Hints |
@@ -373,7 +395,7 @@ Verify your API key and secret are correct. Check that the key has not been revo
 
 ### Tools not showing up
 
-Check your access tier setting. In `read-only` mode, only 36 tools are registered. In `read-execute` mode, 52 tools are registered. Use `full` (or omit `KOMODO_ACCESS_TIER`) for all 53 tools. Check `KOMODO_CATEGORIES` -- only tools in listed categories are registered. Also verify the server started without errors by checking stderr output.
+Check your access tier setting. In `read-only` mode, only 39 tools are registered. In `read-execute` mode, 55 tools are registered. Use `full` (or omit `KOMODO_ACCESS_TIER`) for all 63 tools. Check `KOMODO_CATEGORIES` -- only tools in listed categories are registered. Also verify the server started without errors by checking stderr output.
 
 ## Development
 

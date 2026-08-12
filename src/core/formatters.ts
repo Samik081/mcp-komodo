@@ -6,12 +6,14 @@
  * Details show key fields only, not every config option.
  */
 
+import { createHash } from "node:crypto";
 import type {
   Action,
   ActionActionState,
   ActionListItem,
   Alerter,
   AlerterListItem,
+  ApiKey,
   Build,
   BuildActionState,
   Builder,
@@ -23,6 +25,7 @@ import type {
   GetDeploymentsSummaryResponse,
   GetStacksSummaryResponse,
   Log,
+  Permission,
   Procedure,
   ProcedureActionState,
   ProcedureListItem,
@@ -44,6 +47,7 @@ import type {
   SystemStats,
   Update,
   UpdateListItem,
+  User,
   Version,
 } from "../types/komodo.js";
 
@@ -746,10 +750,13 @@ export function formatUpdateCreated(
   ];
   if (status === "Complete") {
     lines.push(`Result: ${update.success ? "Success" : "Failed"}`);
-    if (update.logs && update.logs.length > 0) {
-      const lastLog = update.logs[update.logs.length - 1];
-      if (lastLog.stderr) {
-        lines.push(`Error: ${lastLog.stderr.split("\n")[0]}`);
+    if (!update.success && update.logs && update.logs.length > 0) {
+      const failed =
+        update.logs.find((log) => !log.success) ??
+        update.logs[update.logs.length - 1];
+      lines.push(`Failed stage: ${failed.stage}`);
+      if (failed.stderr) {
+        lines.push(`Error: ${failed.stderr.split("\n")[0]}`);
       }
     }
   } else {
@@ -757,6 +764,99 @@ export function formatUpdateCreated(
     lines.push(
       `\nThe operation is ${verb}. Use komodo_get_update (Update ID: ${updateId}) ` +
         `to check status and view logs.`,
+    );
+  }
+  return lines.join("\n");
+}
+
+// --- Container env redaction ---
+
+/**
+ * Replace env values in a container-inspect payload with short sha256
+ * digests so secrets never enter the conversation. Pass showValues=true
+ * to return the payload untouched. Matching is structural: any "Env"
+ * key holding an array of "KEY=VALUE" strings is redacted, wherever it
+ * appears in the inspect payload.
+ */
+export function redactContainerEnv(
+  container: unknown,
+  showValues: boolean,
+): unknown {
+  if (showValues) return container;
+  return redactEnvDeep(container);
+}
+
+function redactEnvDeep(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(redactEnvDeep);
+  }
+  if (value && typeof value === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(value)) {
+      if (key === "Env" && Array.isArray(val)) {
+        result[key] = val.map((entry) =>
+          typeof entry === "string" ? hashEnvEntry(entry) : entry,
+        );
+      } else {
+        result[key] = redactEnvDeep(val);
+      }
+    }
+    return result;
+  }
+  return value;
+}
+
+function hashEnvEntry(entry: string): string {
+  const eq = entry.indexOf("=");
+  if (eq === -1) return entry;
+  const key = entry.slice(0, eq);
+  const val = entry.slice(eq + 1);
+  if (val === "") return entry;
+  const digest = createHash("sha256").update(val).digest("hex").slice(0, 12);
+  return `${key}=sha256:${digest}`;
+}
+
+// ---------------------------------------------------------------------------
+// Users & permissions
+// ---------------------------------------------------------------------------
+
+export function formatUserList(users: User[]): string {
+  if (!users || users.length === 0) return "No users found.";
+  const lines: string[] = [`Users (${users.length}):`];
+  for (const u of users) {
+    const flags = [
+      u.admin ? "admin" : null,
+      u.config?.type === "Service" ? "service" : null,
+      u.enabled ? "enabled" : "disabled",
+    ]
+      .filter(Boolean)
+      .join(", ");
+    lines.push(`- ${u.username} (${flags}) [id: ${u._id?.$oid ?? "unknown"}]`);
+  }
+  return lines.join("\n");
+}
+
+export function formatApiKeyList(keys: ApiKey[]): string {
+  if (!keys || keys.length === 0) return "No API keys found.";
+  const lines: string[] = [`API Keys (${keys.length}):`];
+  for (const k of keys) {
+    const expires = k.expires ? new Date(k.expires).toISOString() : "never";
+    lines.push(
+      `- ${k.name} (key: ${k.key}, created: ${new Date(
+        k.created_at,
+      ).toISOString()}, expires: ${expires})`,
+    );
+  }
+  return lines.join("\n");
+}
+
+export function formatPermissionList(perms: Permission[]): string {
+  if (!perms || perms.length === 0) return "No permissions found.";
+  const lines: string[] = [`Permissions (${perms.length}):`];
+  for (const p of perms) {
+    const specifics = p.specific?.length ? ` + [${p.specific.join(", ")}]` : "";
+    lines.push(
+      `- ${p.resource_target.type}/${p.resource_target.id}: ${p.level}${specifics}`,
     );
   }
   return lines.join("\n");

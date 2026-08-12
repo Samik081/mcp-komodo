@@ -19,8 +19,10 @@ import {
   formatStackServiceList,
   formatStacksSummary,
   formatUpdateCreated,
+  redactContainerEnv,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
+import { resolveUpdate, waitInputSchema } from "../core/updates.js";
 import { SearchCombinator } from "../types/komodo.js";
 
 export function registerStackTools(
@@ -196,6 +198,12 @@ export function registerStackTools(
     inputSchema: {
       stack: z.string().describe("Stack name or ID"),
       service: z.string().describe("Service name within the stack to inspect"),
+      show_env_values: z
+        .boolean()
+        .optional()
+        .describe(
+          "Show plaintext env values. By default values are replaced with sha256:<12-hex> digests so secrets stay out of the conversation (compare against a local .env by hashing its values the same way)",
+        ),
     },
     handler: async (args) => {
       const stack = args.stack as string;
@@ -207,7 +215,17 @@ export function registerStackTools(
         });
         return {
           content: [
-            { type: "text" as const, text: JSON.stringify(container, null, 2) },
+            {
+              type: "text" as const,
+              text: JSON.stringify(
+                redactContainerEnv(
+                  container,
+                  (args.show_env_values as boolean | undefined) ?? false,
+                ),
+                null,
+                2,
+              ),
+            },
           ],
         };
       } catch (error) {
@@ -328,6 +346,7 @@ export function registerStackTools(
           "Deploy only specific services by name. If omitted or empty, " +
             "all services are deployed.",
         ),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const stack = args.stack as string;
@@ -341,11 +360,15 @@ export function registerStackTools(
           stack,
           services: services || [],
         });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
-              text: formatUpdateCreated(update, `Deploying stack '${stack}'`),
+              text: formatUpdateCreated(resolved, `Deploying stack '${stack}'`),
             },
           ],
         };
@@ -382,6 +405,7 @@ export function registerStackTools(
           "Pull only specific services by name. If omitted or empty, " +
             "all services are pulled.",
         ),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const stack = args.stack as string;
@@ -391,12 +415,16 @@ export function registerStackTools(
           stack,
           services: services || [],
         });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
               text: formatUpdateCreated(
-                update,
+                resolved,
                 `Pulling images for stack '${stack}'`,
               ),
             },
@@ -419,7 +447,8 @@ export function registerStackTools(
       "Start brings up all containers, stop brings them down gracefully, " +
       "restart stops then starts, pause freezes without stopping, " +
       "unpause resumes. A Stack is a multi-container deployment defined " +
-      "by a Docker Compose file.",
+      "by a Docker Compose file." +
+      " Optionally limit the action to specific services within the stack.",
     accessTier: "read-execute",
     category: "stacks",
     annotations: {
@@ -432,6 +461,13 @@ export function registerStackTools(
       action: z
         .enum(["start", "stop", "restart", "pause", "unpause"])
         .describe("Lifecycle action to perform"),
+      services: z
+        .array(z.string())
+        .optional()
+        .describe(
+          "Limit the action to these services within the stack (default: all services). E.g. restart just one wedged container",
+        ),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const stack = args.stack as string;
@@ -449,12 +485,20 @@ export function registerStackTools(
           pause: "PauseStack",
           unpause: "UnpauseStack",
         } as const;
-        const update = await client.execute(operationMap[action], { stack });
+        const services = (args.services as string[] | undefined) ?? [];
+        const update = await client.execute(operationMap[action], {
+          stack,
+          services,
+        });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
-              text: formatUpdateCreated(update, `${action} stack '${stack}'`),
+              text: formatUpdateCreated(resolved, `${action} stack '${stack}'`),
             },
           ],
         };
@@ -485,17 +529,22 @@ export function registerStackTools(
     },
     inputSchema: {
       stack: z.string().describe("Stack name or ID"),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const stack = args.stack as string;
       try {
         const update = await client.execute("DestroyStack", { stack });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
               text: formatUpdateCreated(
-                update,
+                resolved,
                 `Destroying stack '${stack}' - this is permanent`,
               ),
             },

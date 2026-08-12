@@ -17,6 +17,7 @@ import {
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
+import { resolveUpdate, waitInputSchema } from "../core/updates.js";
 
 export function registerResourceSyncTools(
   server: McpServer,
@@ -128,6 +129,7 @@ export function registerResourceSyncTools(
     },
     inputSchema: {
       resource_sync: z.string().describe("Resource Sync name or ID"),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const resource_sync = args.resource_sync as string;
@@ -135,12 +137,16 @@ export function registerResourceSyncTools(
         const update = await client.execute("RunSync", {
           sync: resource_sync,
         });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
               text: formatUpdateCreated(
-                update,
+                resolved,
                 `Triggering sync '${resource_sync}'`,
               ),
             },

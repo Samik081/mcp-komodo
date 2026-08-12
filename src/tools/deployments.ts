@@ -18,8 +18,10 @@ import {
   formatDeploymentsSummary,
   formatLog,
   formatUpdateCreated,
+  redactContainerEnv,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
+import { resolveUpdate, waitInputSchema } from "../core/updates.js";
 import { SearchCombinator } from "../types/komodo.js";
 
 export function registerDeploymentTools(
@@ -192,6 +194,12 @@ export function registerDeploymentTools(
     },
     inputSchema: {
       deployment: z.string().describe("Deployment name or ID"),
+      show_env_values: z
+        .boolean()
+        .optional()
+        .describe(
+          "Show plaintext env values. By default values are replaced with sha256:<12-hex> digests so secrets stay out of the conversation (compare against a local .env by hashing its values the same way)",
+        ),
     },
     handler: async (args) => {
       const deployment = args.deployment as string;
@@ -201,7 +209,17 @@ export function registerDeploymentTools(
         });
         return {
           content: [
-            { type: "text" as const, text: JSON.stringify(container, null, 2) },
+            {
+              type: "text" as const,
+              text: JSON.stringify(
+                redactContainerEnv(
+                  container,
+                  (args.show_env_values as boolean | undefined) ?? false,
+                ),
+                null,
+                2,
+              ),
+            },
           ],
         };
       } catch (error) {
@@ -267,17 +285,22 @@ export function registerDeploymentTools(
     },
     inputSchema: {
       deployment: z.string().describe("Deployment name or ID"),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const deployment = args.deployment as string;
       try {
         const update = await client.execute("Deploy", { deployment });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
               text: formatUpdateCreated(
-                update,
+                resolved,
                 `Deploying deployment '${deployment}'`,
               ),
             },
@@ -309,6 +332,7 @@ export function registerDeploymentTools(
     },
     inputSchema: {
       deployment: z.string().describe("Deployment name or ID"),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const deployment = args.deployment as string;
@@ -316,12 +340,16 @@ export function registerDeploymentTools(
         const update = await client.execute("PullDeployment", {
           deployment,
         });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
               text: formatUpdateCreated(
-                update,
+                resolved,
                 `Pulling image for deployment '${deployment}'`,
               ),
             },
@@ -361,6 +389,7 @@ export function registerDeploymentTools(
       action: z
         .enum(["start", "stop", "restart", "pause", "unpause"])
         .describe("Lifecycle action to perform"),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const deployment = args.deployment as string;
@@ -381,12 +410,16 @@ export function registerDeploymentTools(
         const update = await client.execute(operationMap[action], {
           deployment,
         });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
               text: formatUpdateCreated(
-                update,
+                resolved,
                 `${action} deployment '${deployment}'`,
               ),
             },
@@ -420,6 +453,7 @@ export function registerDeploymentTools(
     },
     inputSchema: {
       deployment: z.string().describe("Deployment name or ID"),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const deployment = args.deployment as string;
@@ -427,12 +461,16 @@ export function registerDeploymentTools(
         const update = await client.execute("DestroyDeployment", {
           deployment,
         });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
               text: formatUpdateCreated(
-                update,
+                resolved,
                 `Destroying deployment '${deployment}' - this is permanent`,
               ),
             },

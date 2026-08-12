@@ -17,8 +17,10 @@ import {
   formatSystemInfo,
   formatSystemStats,
   formatUpdateCreated,
+  redactContainerEnv,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
+import { resolveUpdate, waitInputSchema } from "../core/updates.js";
 
 export function registerServerTools(
   server: McpServer,
@@ -201,6 +203,12 @@ export function registerServerTools(
     inputSchema: {
       server: z.string().describe("Server name or ID"),
       container: z.string().describe("Container name or ID"),
+      show_env_values: z
+        .boolean()
+        .optional()
+        .describe(
+          "Show plaintext env values. By default values are replaced with sha256:<12-hex> digests so secrets stay out of the conversation (compare against a local .env by hashing its values the same way)",
+        ),
     },
     handler: async (args) => {
       const serverParam = args.server as string;
@@ -212,7 +220,17 @@ export function registerServerTools(
         });
         return {
           content: [
-            { type: "text" as const, text: JSON.stringify(result, null, 2) },
+            {
+              type: "text" as const,
+              text: JSON.stringify(
+                redactContainerEnv(
+                  result,
+                  (args.show_env_values as boolean | undefined) ?? false,
+                ),
+                null,
+                2,
+              ),
+            },
           ],
         };
       } catch (error) {
@@ -244,6 +262,12 @@ export function registerServerTools(
     inputSchema: {
       server: z.string().describe("Server name or ID"),
       image: z.string().describe("Image name or ID (e.g., nginx:latest)"),
+      show_env_values: z
+        .boolean()
+        .optional()
+        .describe(
+          "Show plaintext env values. By default values are replaced with sha256:<12-hex> digests so secrets stay out of the conversation (compare against a local .env by hashing its values the same way)",
+        ),
     },
     handler: async (args) => {
       const serverParam = args.server as string;
@@ -255,7 +279,17 @@ export function registerServerTools(
         });
         return {
           content: [
-            { type: "text" as const, text: JSON.stringify(result, null, 2) },
+            {
+              type: "text" as const,
+              text: JSON.stringify(
+                redactContainerEnv(
+                  result,
+                  (args.show_env_values as boolean | undefined) ?? false,
+                ),
+                null,
+                2,
+              ),
+            },
           ],
         };
       } catch (error) {
@@ -389,6 +423,7 @@ export function registerServerTools(
             "'networks' (unused), 'buildx' (build cache), " +
             "'system' (all of the above)",
         ),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const serverParam = args.server as string;
@@ -411,12 +446,16 @@ export function registerServerTools(
         const update = await client.execute(operationMap[resource_type], {
           server: serverParam,
         });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
               text: formatUpdateCreated(
-                update,
+                resolved,
                 `Pruning ${resource_type} on server '${serverParam}'`,
               ),
             },
@@ -461,6 +500,7 @@ export function registerServerTools(
           "Name or ID of the Docker resource to delete (e.g., image " +
             "tag, volume name, network name)",
         ),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const serverParam = args.server as string;
@@ -479,12 +519,16 @@ export function registerServerTools(
           server: serverParam,
           name,
         });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
               text: formatUpdateCreated(
-                update,
+                resolved,
                 `Deleting ${resource_type} '${name}' on server '${serverParam}'`,
               ),
             },

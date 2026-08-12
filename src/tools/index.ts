@@ -21,6 +21,7 @@ import { registerResourceSyncTools } from "./resource-syncs.js";
 import { registerServerTools } from "./servers.js";
 import { registerStackTools } from "./stacks.js";
 import { registerUpdateTools } from "./updates.js";
+import { registerUserTools } from "./users.js";
 import { registerWriteTools } from "./write.js";
 
 export function registerAllTools(
@@ -40,6 +41,7 @@ export function registerAllTools(
   registerAlerterTools(server, client, config);
   registerResourceSyncTools(server, client, config);
   registerUpdateTools(server, client, config);
+  registerUserTools(server, client, config);
   registerWriteTools(server, client, config);
 
   validateToolLists(config);

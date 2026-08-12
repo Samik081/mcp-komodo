@@ -17,6 +17,7 @@ import {
   formatUpdateCreated,
 } from "../core/formatters.js";
 import { registerTool } from "../core/tools.js";
+import { resolveUpdate, waitInputSchema } from "../core/updates.js";
 
 export function registerRepoTools(
   server: McpServer,
@@ -124,6 +125,7 @@ export function registerRepoTools(
       action: z
         .enum(["clone", "pull"])
         .describe("Whether to clone or pull the repo"),
+      ...waitInputSchema,
     },
     handler: async (args) => {
       const repo = args.repo as string;
@@ -134,11 +136,15 @@ export function registerRepoTools(
           pull: "PullRepo",
         } as const;
         const update = await client.execute(operationMap[action], { repo });
+        const resolved = await resolveUpdate(client, update, {
+          wait: args.wait as boolean | undefined,
+          wait_timeout_seconds: args.wait_timeout_seconds as number | undefined,
+        });
         return {
           content: [
             {
               type: "text" as const,
-              text: formatUpdateCreated(update, `${action} repo '${repo}'`),
+              text: formatUpdateCreated(resolved, `${action} repo '${repo}'`),
             },
           ],
         };

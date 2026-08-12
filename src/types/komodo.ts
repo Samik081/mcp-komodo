@@ -471,3 +471,44 @@ export interface UpdateListItem {
   status: string;
   version?: Version;
 }
+
+// --- Users, API keys & permissions ---
+
+export interface UserConfig {
+  type: string;
+  data: Record<string, unknown>;
+}
+
+export interface User {
+  _id?: MongoId;
+  username: string;
+  enabled: boolean;
+  admin: boolean;
+  super_admin?: boolean;
+  create_server_permissions: boolean;
+  create_build_permissions: boolean;
+  config?: UserConfig;
+  updated_at?: number;
+}
+
+export interface ApiKey {
+  name: string;
+  key: string;
+  created_at: number;
+  expires: number;
+}
+
+export interface UserTarget {
+  type: "User" | "UserGroup";
+  id: string;
+}
+
+export type PermissionLevel = "None" | "Read" | "Execute" | "Write";
+
+export interface Permission {
+  _id?: MongoId;
+  user_target: UserTarget;
+  resource_target: ResourceTarget;
+  level: PermissionLevel;
+  specific?: string[];
+}
