@@ -166,6 +166,7 @@ Set `KOMODO_ACCESS_TIER` to `read-only`, `read-execute`, or `full` (default: `fu
 | `MCP_TRANSPORT` | No | `stdio` | Transport mode: `stdio` (default) or `http` |
 | `MCP_PORT` | No | `3000` | HTTP server port (only used when `MCP_TRANSPORT=http`) |
 | `MCP_HOST` | No | `0.0.0.0` | HTTP server bind address (only used when `MCP_TRANSPORT=http`) |
+| `MCP_SESSION_IDLE_TIMEOUT` | No | `1800` | Seconds of inactivity after which an HTTP session is closed and its memory released (sessions with a connected SSE stream are never closed). `0` disables. Only used when `MCP_TRANSPORT=http` |
 | `MCP_EXCLUDE_TOOL_TITLES` | No | `false` | Set `true` to omit tool titles from registration (saves tokens) |
 
 Generate API keys in the Komodo UI under **Settings > API Keys**.
