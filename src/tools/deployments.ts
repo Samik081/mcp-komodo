@@ -21,6 +21,7 @@ import {
   formatUpdateCreated,
   redactContainerEnv,
 } from "../core/formatters.js";
+import { formatLogSearch } from "../core/log-search.js";
 import { registerTool } from "../core/tools.js";
 import { resolveUpdate, waitInputSchema } from "../core/updates.js";
 import { SearchCombinator } from "../types/komodo.js";
@@ -153,19 +154,27 @@ export function registerDeploymentTools(
       const search_terms = args.search_terms as string[] | undefined;
       const search_combinator = args.search_combinator as string | undefined;
       try {
-        const log = search_terms?.length
-          ? await client.read("SearchDeploymentLog", {
-              deployment,
-              terms: search_terms,
-              combinator:
-                (search_combinator as SearchCombinator) || SearchCombinator.Or,
-            })
-          : await client.read("GetDeploymentLog", {
-              deployment,
-              tail: tail || 50,
-            });
+        let text: string;
+        if (search_terms?.length) {
+          const combinator =
+            (search_combinator as SearchCombinator) || SearchCombinator.Or;
+          const log = await client.read("SearchDeploymentLog", {
+            deployment,
+            terms: search_terms,
+            combinator,
+          });
+          text = await formatLogSearch(log, search_terms, combinator, () =>
+            client.read("GetDeploymentLog", { deployment, tail: 1 }),
+          );
+        } else {
+          const log = await client.read("GetDeploymentLog", {
+            deployment,
+            tail: tail || 50,
+          });
+          text = formatLog(log);
+        }
         return {
-          content: [{ type: "text" as const, text: formatLog(log) }],
+          content: [{ type: "text" as const, text }],
         };
       } catch (error) {
         return handleKomodoError(
