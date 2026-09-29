@@ -20,6 +20,8 @@ export interface AppConfig {
   httpHost: string;
   /** Idle time after which an HTTP session is closed. 0 disables reaping. */
   sessionIdleTimeoutMs: number;
+  /** Whether inspect tools may return plaintext env values (show_env_values). */
+  allowEnvValues: boolean;
 }
 
 /**
@@ -34,6 +36,19 @@ function parseAccessTier(): AccessTier {
   }
 
   return "full";
+}
+
+/**
+ * Determine whether plaintext env values may be shown from
+ * KOMODO_ALLOW_ENV_VALUES ("true" | "false"). Any other value falls back
+ * to the tier default: allowed on read-execute and full, refused on
+ * read-only.
+ */
+function parseAllowEnvValues(accessTier: AccessTier): boolean {
+  const value = process.env.KOMODO_ALLOW_ENV_VALUES;
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return accessTier !== "read-only";
 }
 
 function parseCategories(value: string | undefined): string[] | null {
@@ -60,7 +75,8 @@ function parseToolList(value: string | undefined): string[] | null {
  * Load and validate application config from environment variables.
  *
  * Required: KOMODO_URL, KOMODO_API_KEY, KOMODO_API_SECRET
- * Optional: KOMODO_ACCESS_TIER (default: 'full'), KOMODO_CATEGORIES, DEBUG
+ * Optional: KOMODO_ACCESS_TIER (default: 'full'), KOMODO_CATEGORIES,
+ * KOMODO_ALLOW_ENV_VALUES (default: allowed unless read-only), DEBUG
  *
  * Throws clear error (no credentials in message) if required vars are missing.
  */
@@ -109,11 +125,13 @@ export function loadConfig(): AppConfig {
   }
   const sessionIdleTimeoutMs = sessionIdleTimeoutSec * 1000;
 
+  const accessTier = parseAccessTier();
+
   return {
     url: url.replace(/\/+$/, ""),
     apiKey,
     apiSecret,
-    accessTier: parseAccessTier(),
+    accessTier,
     categories: parseCategories(process.env.KOMODO_CATEGORIES),
     toolBlacklist: parseToolList(process.env.KOMODO_TOOL_BLACKLIST),
     toolWhitelist: parseToolList(process.env.KOMODO_TOOL_WHITELIST),
@@ -123,5 +141,6 @@ export function loadConfig(): AppConfig {
     httpPort,
     httpHost,
     sessionIdleTimeoutMs,
+    allowEnvValues: parseAllowEnvValues(accessTier),
   };
 }

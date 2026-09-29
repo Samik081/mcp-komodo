@@ -13,6 +13,7 @@ import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
+  envValuesRefusal,
   formatDeploymentDetail,
   formatDeploymentList,
   formatDeploymentsSummary,
@@ -198,11 +199,15 @@ export function registerDeploymentTools(
         .boolean()
         .optional()
         .describe(
-          "Show plaintext env values. By default values are replaced with sha256:<12-hex> digests so secrets stay out of the conversation (compare against a local .env by hashing its values the same way)",
+          "Show plaintext env values. By default values are replaced with sha256:<12-hex> digests so secrets stay out of the conversation (compare against a local .env by hashing its values the same way). Refused when the server disallows plaintext env values (the default on the read-only access tier; see KOMODO_ALLOW_ENV_VALUES)",
         ),
     },
     handler: async (args) => {
       const deployment = args.deployment as string;
+      const showEnvValues =
+        (args.show_env_values as boolean | undefined) ?? false;
+      const refusal = envValuesRefusal(showEnvValues, config.allowEnvValues);
+      if (refusal) return refusal;
       try {
         const container = await client.read("InspectDeploymentContainer", {
           deployment,
@@ -212,10 +217,7 @@ export function registerDeploymentTools(
             {
               type: "text" as const,
               text: JSON.stringify(
-                redactContainerEnv(
-                  container,
-                  (args.show_env_values as boolean | undefined) ?? false,
-                ),
+                redactContainerEnv(container, showEnvValues),
                 null,
                 2,
               ),

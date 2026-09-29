@@ -50,6 +50,7 @@ import type {
   User,
   Version,
 } from "../types/komodo.js";
+import type { McpErrorResponse } from "./errors.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -784,6 +785,31 @@ export function redactContainerEnv(
 ): unknown {
   if (showValues) return container;
   return redactEnvDeep(container);
+}
+
+/**
+ * Refuse show_env_values=true when the server is not allowed to return
+ * plaintext env values (read-only tier by default, or
+ * KOMODO_ALLOW_ENV_VALUES=false). Returns null when the request is fine.
+ */
+export function envValuesRefusal(
+  showValues: boolean,
+  allowed: boolean,
+): McpErrorResponse | null {
+  if (!showValues || allowed) return null;
+  return {
+    content: [
+      {
+        type: "text",
+        text:
+          "Plaintext env values are disabled on this server " +
+          "(default on the read-only access tier). Omit show_env_values " +
+          "to get sha256:<12-hex> digests instead, or ask the operator " +
+          "to set KOMODO_ALLOW_ENV_VALUES=true.",
+      },
+    ],
+    isError: true,
+  };
 }
 
 function redactEnvDeep(value: unknown): unknown {

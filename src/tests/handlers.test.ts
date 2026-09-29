@@ -343,6 +343,103 @@ describe("handler: inspect tools redact env values", () => {
   });
 });
 
+describe("handler: show_env_values gating", () => {
+  const inspectCalls = [
+    {
+      name: "komodo_inspect_stack_container",
+      arguments: { stack: "media-stack", service: "vpn" },
+    },
+    {
+      name: "komodo_inspect_deployment_container",
+      arguments: { deployment: "web" },
+    },
+    {
+      name: "komodo_inspect_docker_container",
+      arguments: { server: "nuc", container: "web" },
+    },
+    {
+      name: "komodo_inspect_docker_image",
+      arguments: { server: "nuc", image: "nginx:latest" },
+    },
+  ];
+  const payload = { Config: { Env: ["API_TOKEN=secret"] } };
+
+  it.each(inspectCalls)(
+    "$name refuses show_env_values when env values are not allowed",
+    async (call) => {
+      const mockClient = makeMockClient();
+      vi.mocked(mockClient.read).mockResolvedValue(payload);
+      const server = createServer();
+      registerAllTools(
+        server,
+        mockClient,
+        makeConfig({ accessTier: "read-only", allowEnvValues: false }),
+      );
+      const { client, cleanup } = await connectTestClient(server);
+
+      const result = await client.callTool({
+        name: call.name,
+        arguments: { ...call.arguments, show_env_values: true },
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { type: "text"; text: string }).text;
+      expect(text).toContain("KOMODO_ALLOW_ENV_VALUES");
+      expect(text).not.toContain("API_TOKEN=secret");
+      expect(mockClient.read).not.toHaveBeenCalled();
+      await cleanup();
+    },
+  );
+
+  it.each(inspectCalls)(
+    "$name still returns digests without show_env_values when not allowed",
+    async (call) => {
+      const mockClient = makeMockClient();
+      vi.mocked(mockClient.read).mockResolvedValue(payload);
+      const server = createServer();
+      registerAllTools(
+        server,
+        mockClient,
+        makeConfig({ accessTier: "read-only", allowEnvValues: false }),
+      );
+      const { client, cleanup } = await connectTestClient(server);
+
+      const result = await client.callTool(call);
+
+      expect(result.isError).toBeFalsy();
+      const text = (result.content[0] as { type: "text"; text: string }).text;
+      expect(text).toContain("API_TOKEN=sha256:2bb80d537b1d");
+      await cleanup();
+    },
+  );
+
+  it("allows show_env_values on read-only when explicitly opted in", async () => {
+    const mockClient = makeMockClient();
+    vi.mocked(mockClient.read).mockResolvedValue(payload);
+    const server = createServer();
+    registerAllTools(
+      server,
+      mockClient,
+      makeConfig({ accessTier: "read-only", allowEnvValues: true }),
+    );
+    const { client, cleanup } = await connectTestClient(server);
+
+    const result = await client.callTool({
+      name: "komodo_inspect_stack_container",
+      arguments: {
+        stack: "media-stack",
+        service: "vpn",
+        show_env_values: true,
+      },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const text = (result.content[0] as { type: "text"; text: string }).text;
+    expect(text).toContain("API_TOKEN=secret");
+    await cleanup();
+  });
+});
+
 describe("handler: komodo_inspect_docker_image redacts baked-in env", () => {
   it("hashes image env values by default", async () => {
     const mockClient = makeMockClient();
