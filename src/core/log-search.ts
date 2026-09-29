@@ -42,8 +42,8 @@ function formatMatches(search: Log, tail: number): string {
   if (lines.length <= tail) return formatLog(search);
   return (
     `[OK] ${search.stage}\n` +
-    `Showing last ${tail} of ${lines.length} matching lines ` +
-    "(raise tail or narrow search_terms to see more)\n" +
+    `Showing last ${tail} of ${lines.length} matching lines in the ` +
+    "searched window (raise tail or narrow search_terms to see more)\n" +
     lines.slice(-tail).join("\n")
   );
 }

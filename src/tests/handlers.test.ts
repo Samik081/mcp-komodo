@@ -825,7 +825,9 @@ describe("handler: log search caps output to tail", () => {
       const text = await callSearch(tool.name, tool.arguments);
 
       expect(text).toContain("[OK] Get log grep");
-      expect(text).toContain("Showing last 50 of 120 matching lines");
+      expect(text).toContain(
+        "Showing last 50 of 120 matching lines in the searched window",
+      );
       expect(text).toContain("match 120");
       expect(text).toContain("match 71");
       expect(text).not.toContain("match 70\n");
