@@ -209,7 +209,7 @@ All 16 execute tools wait for the operation to complete and report its real outc
 | `komodo_get_stack` | Get stack configuration, services, and action state | read-only | read-only, idempotent |
 | `komodo_list_stack_services` | List services in a stack with image, container state, and update availability | read-only | read-only, idempotent |
 | `komodo_get_stacks_summary` | Get aggregate counts of all stacks by state | read-only | read-only, idempotent |
-| `komodo_get_stack_log` | Get logs from stack services, with optional search (zero matches reports "No lines matched"; an unknown service name also reads as no matches) | read-only | read-only, idempotent |
+| `komodo_get_stack_log` | Get logs from stack services, with optional search | read-only | read-only, idempotent |
 | `komodo_inspect_stack_container` | Inspect a container for a specific service in a stack (`docker inspect` payload); env values render as `sha256:<12-hex>` digests unless `show_env_values: true` (refused on the `read-only` tier unless `KOMODO_ALLOW_ENV_VALUES=true`) -- redaction covers `Env` arrays only, so labels, cmd, and mounts are returned unredacted | read-only | read-only, idempotent |
 | `komodo_deploy_stack` | Deploy or redeploy a stack | read-execute | destructive |
 | `komodo_pull_stack` | Pull latest images without redeploying (docker compose pull) | read-execute | idempotent |
@@ -226,7 +226,7 @@ All 16 execute tools wait for the operation to complete and report its real outc
 | `komodo_list_deployments` | List all deployments with state, image, and server | read-only | read-only, idempotent |
 | `komodo_get_deployment` | Get deployment configuration, container status, and action state | read-only | read-only, idempotent |
 | `komodo_get_deployments_summary` | Get aggregate counts of all deployments by state | read-only | read-only, idempotent |
-| `komodo_get_deployment_log` | Get container logs, with optional search (zero matches reports "No lines matched"; a missing container surfaces the real error) | read-only | read-only, idempotent |
+| `komodo_get_deployment_log` | Get container logs, with optional search | read-only | read-only, idempotent |
 | `komodo_inspect_deployment_container` | Inspect the container for a deployment (`docker inspect` payload); env values render as `sha256:<12-hex>` digests unless `show_env_values: true` (refused on the `read-only` tier unless `KOMODO_ALLOW_ENV_VALUES=true`) -- redaction covers `Env` arrays only, so labels, cmd, and mounts are returned unredacted | read-only | read-only, idempotent |
 | `komodo_deploy_deployment` | Deploy with latest image and configuration | read-execute | destructive |
 | `komodo_pull_deployment` | Pull latest image without redeploying (docker pull) | read-execute | idempotent |
@@ -240,7 +240,7 @@ All 16 execute tools wait for the operation to complete and report its real outc
 
 | Tool | Description | Access | Hints |
 |------|-------------|--------|-------|
-| `komodo_get_container_log` | Get logs from any Docker container on a server, with optional search (zero matches reports "No lines matched"; a missing container surfaces the real error) | read-only | read-only, idempotent |
+| `komodo_get_container_log` | Get logs from any Docker container on a server | read-only | read-only, idempotent |
 
 </details>
 
