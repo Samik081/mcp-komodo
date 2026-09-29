@@ -48,7 +48,10 @@ export function registerContainerTools(
         .min(1)
         .max(5000)
         .optional()
-        .describe("Number of log lines to return (default: 50, max: 5000)"),
+        .describe(
+          "Number of log lines to return; with search_terms, the number of " +
+            "most recent matching lines (default: 50, max: 5000)",
+        ),
       search_terms: z
         .array(z.string())
         .optional()
@@ -75,12 +78,17 @@ export function registerContainerTools(
             terms: search_terms,
             combinator,
           });
-          text = await formatLogSearch(log, search_terms, combinator, () =>
-            client.read("GetContainerLog", {
-              server: serverParam,
-              container,
-              tail: 1,
-            }),
+          text = await formatLogSearch(
+            log,
+            search_terms,
+            combinator,
+            tail ?? 50,
+            () =>
+              client.read("GetContainerLog", {
+                server: serverParam,
+                container,
+                tail: 1,
+              }),
           );
         } else {
           const log = await client.read("GetContainerLog", {

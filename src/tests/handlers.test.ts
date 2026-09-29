@@ -780,3 +780,81 @@ describe("handler: log search with zero matches", () => {
     },
   );
 });
+
+describe("handler: log search caps output to tail", () => {
+  const matches = Array.from({ length: 120 }, (_, i) => `match ${i + 1}`);
+  const searchLog = {
+    stage: "Get log grep",
+    command: "docker logs web 2>&1 | grep -E 'match'",
+    stdout: `${matches.join("\n")}\n`,
+    stderr: "",
+    success: true,
+    start_ts: 0,
+    end_ts: 0,
+  };
+
+  const logTools = [
+    {
+      name: "komodo_get_container_log",
+      arguments: { server: "nuc", container: "web" },
+    },
+    { name: "komodo_get_deployment_log", arguments: { deployment: "web" } },
+    { name: "komodo_get_stack_log", arguments: { stack: "media-stack" } },
+  ];
+
+  async function callSearch(
+    name: string,
+    args: Record<string, unknown>,
+  ): Promise<string> {
+    const mockClient = makeMockClient();
+    vi.mocked(mockClient.read).mockResolvedValueOnce(searchLog);
+    const server = createServer();
+    registerAllTools(server, mockClient, makeConfig());
+    const { client, cleanup } = await connectTestClient(server);
+    const result = await client.callTool({
+      name,
+      arguments: { ...args, search_terms: ["match"] },
+    });
+    await cleanup();
+    return (result.content as Array<{ type: "text"; text: string }>)[0].text;
+  }
+
+  it.each(logTools)(
+    "$name keeps the last 50 matches by default and says how many were omitted",
+    async (tool) => {
+      const text = await callSearch(tool.name, tool.arguments);
+
+      expect(text).toContain("[OK] Get log grep");
+      expect(text).toContain(
+        "Showing last 50 of 120 matching lines in the searched window",
+      );
+      expect(text).toContain("match 120");
+      expect(text).toContain("match 71");
+      expect(text).not.toContain("match 70\n");
+    },
+  );
+
+  it.each(logTools)("$name honors tail when searching", async (tool) => {
+    const text = await callSearch(tool.name, { ...tool.arguments, tail: 5 });
+
+    expect(text).toContain("Showing last 5 of 120 matching lines");
+    expect(text).toContain(
+      "match 116\nmatch 117\nmatch 118\nmatch 119\nmatch 120",
+    );
+    expect(text).not.toContain("match 115");
+  });
+
+  it.each(logTools)(
+    "$name returns all matches without a note when within tail",
+    async (tool) => {
+      const text = await callSearch(tool.name, {
+        ...tool.arguments,
+        tail: 500,
+      });
+
+      expect(text).not.toContain("Showing last");
+      expect(text).toContain("match 1\n");
+      expect(text).toContain("match 120");
+    },
+  );
+});
