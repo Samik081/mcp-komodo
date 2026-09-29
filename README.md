@@ -162,6 +162,7 @@ Set `KOMODO_ACCESS_TIER` to `read-only`, `read-execute`, or `full` (default: `fu
 | `KOMODO_CATEGORIES` | No | *(all)* | Comma-separated category allowlist (e.g., `servers,stacks,builds`) |
 | `KOMODO_TOOL_BLACKLIST` | No | *(none)* | Comma-separated list of tool names to exclude (e.g., `komodo_destroy_stack`) |
 | `KOMODO_TOOL_WHITELIST` | No | *(none)* | Comma-separated list of tool names to force-include, bypassing access tier and category filters |
+| `KOMODO_ALLOW_ENV_VALUES` | No | *(tier-based)* | Whether inspect tools may return plaintext env values via `show_env_values: true`. Defaults to allowed on `read-execute`/`full` and refused on `read-only`; set `true` or `false` to override |
 | `DEBUG` | No | `false` | Enable debug logging to stderr |
 | `MCP_TRANSPORT` | No | `stdio` | Transport mode: `stdio` (default) or `http` |
 | `MCP_PORT` | No | `3000` | HTTP server port (only used when `MCP_TRANSPORT=http`) |
@@ -190,8 +191,8 @@ All 16 execute tools wait for the operation to complete and report its real outc
 | `komodo_get_server` | Get server configuration, status, and action state | read-only | read-only, idempotent |
 | `komodo_get_server_stats` | Get CPU, memory, disk usage, and load averages | read-only | read-only, idempotent |
 | `komodo_get_server_info` | Get OS details, hardware info, and running processes | read-only | read-only, idempotent |
-| `komodo_inspect_docker_container` | Inspect a Docker container (`docker inspect` payload); env values render as `sha256:<12-hex>` digests unless `show_env_values: true` -- redaction covers `Env` arrays only, so labels, cmd, and mounts are returned unredacted | read-only | read-only, idempotent |
-| `komodo_inspect_docker_image` | Inspect a Docker image (`docker image inspect` payload); baked-in env values render as `sha256:<12-hex>` digests unless `show_env_values: true` -- redaction covers `Env` arrays only, so labels, cmd, and layers are returned unredacted | read-only | read-only, idempotent |
+| `komodo_inspect_docker_container` | Inspect a Docker container (`docker inspect` payload); env values render as `sha256:<12-hex>` digests unless `show_env_values: true` (refused on the `read-only` tier unless `KOMODO_ALLOW_ENV_VALUES=true`) -- redaction covers `Env` arrays only, so labels, cmd, and mounts are returned unredacted | read-only | read-only, idempotent |
+| `komodo_inspect_docker_image` | Inspect a Docker image (`docker image inspect` payload); baked-in env values render as `sha256:<12-hex>` digests unless `show_env_values: true` (refused on the `read-only` tier unless `KOMODO_ALLOW_ENV_VALUES=true`) -- redaction covers `Env` arrays only, so labels, cmd, and layers are returned unredacted | read-only | read-only, idempotent |
 | `komodo_inspect_docker_network` | Inspect a Docker network (equivalent to docker network inspect) | read-only | read-only, idempotent |
 | `komodo_inspect_docker_volume` | Inspect a Docker volume (equivalent to docker volume inspect) | read-only | read-only, idempotent |
 | `komodo_prune_docker` | Prune unused Docker resources on a server | read-execute | destructive, idempotent |
@@ -209,7 +210,7 @@ All 16 execute tools wait for the operation to complete and report its real outc
 | `komodo_list_stack_services` | List services in a stack with image, container state, and update availability | read-only | read-only, idempotent |
 | `komodo_get_stacks_summary` | Get aggregate counts of all stacks by state | read-only | read-only, idempotent |
 | `komodo_get_stack_log` | Get logs from stack services, with optional search | read-only | read-only, idempotent |
-| `komodo_inspect_stack_container` | Inspect a container for a specific service in a stack (`docker inspect` payload); env values render as `sha256:<12-hex>` digests unless `show_env_values: true` -- redaction covers `Env` arrays only, so labels, cmd, and mounts are returned unredacted | read-only | read-only, idempotent |
+| `komodo_inspect_stack_container` | Inspect a container for a specific service in a stack (`docker inspect` payload); env values render as `sha256:<12-hex>` digests unless `show_env_values: true` (refused on the `read-only` tier unless `KOMODO_ALLOW_ENV_VALUES=true`) -- redaction covers `Env` arrays only, so labels, cmd, and mounts are returned unredacted | read-only | read-only, idempotent |
 | `komodo_deploy_stack` | Deploy or redeploy a stack | read-execute | destructive |
 | `komodo_pull_stack` | Pull latest images without redeploying (docker compose pull) | read-execute | idempotent |
 | `komodo_stack_lifecycle` | Start, stop, restart, pause, or unpause a stack; optionally targets specific services | read-execute | destructive |
@@ -226,7 +227,7 @@ All 16 execute tools wait for the operation to complete and report its real outc
 | `komodo_get_deployment` | Get deployment configuration, container status, and action state | read-only | read-only, idempotent |
 | `komodo_get_deployments_summary` | Get aggregate counts of all deployments by state | read-only | read-only, idempotent |
 | `komodo_get_deployment_log` | Get container logs, with optional search | read-only | read-only, idempotent |
-| `komodo_inspect_deployment_container` | Inspect the container for a deployment (`docker inspect` payload); env values render as `sha256:<12-hex>` digests unless `show_env_values: true` -- redaction covers `Env` arrays only, so labels, cmd, and mounts are returned unredacted | read-only | read-only, idempotent |
+| `komodo_inspect_deployment_container` | Inspect the container for a deployment (`docker inspect` payload); env values render as `sha256:<12-hex>` digests unless `show_env_values: true` (refused on the `read-only` tier unless `KOMODO_ALLOW_ENV_VALUES=true`) -- redaction covers `Env` arrays only, so labels, cmd, and mounts are returned unredacted | read-only | read-only, idempotent |
 | `komodo_deploy_deployment` | Deploy with latest image and configuration | read-execute | destructive |
 | `komodo_pull_deployment` | Pull latest image without redeploying (docker pull) | read-execute | idempotent |
 | `komodo_deployment_lifecycle` | Start, stop, restart, pause, or unpause a deployment | read-execute | destructive |

@@ -11,6 +11,7 @@ import type { KomodoClient } from "../core/client.js";
 import type { AppConfig } from "../core/config.js";
 import { handleKomodoError } from "../core/errors.js";
 import {
+  envValuesRefusal,
   formatProcessList,
   formatServerDetail,
   formatServerList,
@@ -207,12 +208,16 @@ export function registerServerTools(
         .boolean()
         .optional()
         .describe(
-          "Show plaintext env values. By default values are replaced with sha256:<12-hex> digests so secrets stay out of the conversation (compare against a local .env by hashing its values the same way)",
+          "Show plaintext env values. By default values are replaced with sha256:<12-hex> digests so secrets stay out of the conversation (compare against a local .env by hashing its values the same way). Refused when the server disallows plaintext env values (the default on the read-only access tier; see KOMODO_ALLOW_ENV_VALUES)",
         ),
     },
     handler: async (args) => {
       const serverParam = args.server as string;
       const container = args.container as string;
+      const showEnvValues =
+        (args.show_env_values as boolean | undefined) ?? false;
+      const refusal = envValuesRefusal(showEnvValues, config.allowEnvValues);
+      if (refusal) return refusal;
       try {
         const result = await client.read("InspectDockerContainer", {
           server: serverParam,
@@ -223,10 +228,7 @@ export function registerServerTools(
             {
               type: "text" as const,
               text: JSON.stringify(
-                redactContainerEnv(
-                  result,
-                  (args.show_env_values as boolean | undefined) ?? false,
-                ),
+                redactContainerEnv(result, showEnvValues),
                 null,
                 2,
               ),
@@ -266,12 +268,16 @@ export function registerServerTools(
         .boolean()
         .optional()
         .describe(
-          "Show plaintext env values. By default values are replaced with sha256:<12-hex> digests so secrets stay out of the conversation (compare against a local .env by hashing its values the same way)",
+          "Show plaintext env values. By default values are replaced with sha256:<12-hex> digests so secrets stay out of the conversation (compare against a local .env by hashing its values the same way). Refused when the server disallows plaintext env values (the default on the read-only access tier; see KOMODO_ALLOW_ENV_VALUES)",
         ),
     },
     handler: async (args) => {
       const serverParam = args.server as string;
       const image = args.image as string;
+      const showEnvValues =
+        (args.show_env_values as boolean | undefined) ?? false;
+      const refusal = envValuesRefusal(showEnvValues, config.allowEnvValues);
+      if (refusal) return refusal;
       try {
         const result = await client.read("InspectDockerImage", {
           server: serverParam,
@@ -282,10 +288,7 @@ export function registerServerTools(
             {
               type: "text" as const,
               text: JSON.stringify(
-                redactContainerEnv(
-                  result,
-                  (args.show_env_values as boolean | undefined) ?? false,
-                ),
+                redactContainerEnv(result, showEnvValues),
                 null,
                 2,
               ),
