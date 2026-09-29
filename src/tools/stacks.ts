@@ -22,6 +22,7 @@ import {
   formatUpdateCreated,
   redactContainerEnv,
 } from "../core/formatters.js";
+import { formatLogSearch } from "../core/log-search.js";
 import { registerTool } from "../core/tools.js";
 import { resolveUpdate, waitInputSchema } from "../core/updates.js";
 import { SearchCombinator } from "../types/komodo.js";
@@ -118,7 +119,9 @@ export function registerStackTools(
       "Get logs from a Komodo Stack's Docker Compose services. Optionally " +
       "search for specific terms in the log output. A Stack is a " +
       "multi-container deployment defined by a Docker Compose file. " +
-      "Returns the most recent log lines from all or specified services.",
+      "Returns the most recent log lines from all or specified services. " +
+      "A search with no hits reports 'No lines matched'; note that an " +
+      "unknown service name in services also yields no matches.",
     accessTier: "read-only",
     category: "stacks",
     annotations: {
@@ -157,21 +160,33 @@ export function registerStackTools(
       const search_terms = args.search_terms as string[] | undefined;
       const search_combinator = args.search_combinator as string | undefined;
       try {
-        const log = search_terms?.length
-          ? await client.read("SearchStackLog", {
+        let text: string;
+        if (search_terms?.length) {
+          const combinator =
+            (search_combinator as SearchCombinator) || SearchCombinator.Or;
+          const log = await client.read("SearchStackLog", {
+            stack,
+            services: services || [],
+            terms: search_terms,
+            combinator,
+          });
+          text = await formatLogSearch(log, search_terms, combinator, () =>
+            client.read("GetStackLog", {
               stack,
               services: services || [],
-              terms: search_terms,
-              combinator:
-                (search_combinator as SearchCombinator) || SearchCombinator.Or,
-            })
-          : await client.read("GetStackLog", {
-              stack,
-              services: services || [],
-              tail: tail || 50,
-            });
+              tail: 1,
+            }),
+          );
+        } else {
+          const log = await client.read("GetStackLog", {
+            stack,
+            services: services || [],
+            tail: tail || 50,
+          });
+          text = formatLog(log);
+        }
         return {
-          content: [{ type: "text" as const, text: formatLog(log) }],
+          content: [{ type: "text" as const, text }],
         };
       } catch (error) {
         return handleKomodoError(`getting logs for stack '${stack}'`, error);

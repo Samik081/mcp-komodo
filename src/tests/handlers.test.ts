@@ -653,3 +653,130 @@ describe("handler: users write tools", () => {
     await cleanup();
   });
 });
+
+describe("handler: log search with zero matches", () => {
+  const log = (overrides: Record<string, unknown>) => ({
+    stage: "Get log",
+    command: "docker logs web --tail 5000 2>&1 | grep -E 'boom'",
+    stdout: "",
+    stderr: "",
+    success: true,
+    start_ts: 0,
+    end_ts: 0,
+    ...overrides,
+  });
+
+  const logTools = [
+    {
+      name: "komodo_get_container_log",
+      arguments: { server: "nuc", container: "web" },
+      probeOp: "GetContainerLog",
+      probeParams: { server: "nuc", container: "web", tail: 1 },
+    },
+    {
+      name: "komodo_get_deployment_log",
+      arguments: { deployment: "web" },
+      probeOp: "GetDeploymentLog",
+      probeParams: { deployment: "web", tail: 1 },
+    },
+    {
+      name: "komodo_get_stack_log",
+      arguments: { stack: "media-stack", services: ["web"] },
+      probeOp: "GetStackLog",
+      probeParams: { stack: "media-stack", services: ["web"], tail: 1 },
+    },
+  ];
+
+  async function callSearch(
+    mockClient: KomodoClient,
+    tool: (typeof logTools)[number],
+  ) {
+    const server = createServer();
+    registerAllTools(server, mockClient, makeConfig());
+    const { client, cleanup } = await connectTestClient(server);
+    const result = await client.callTool({
+      name: tool.name,
+      arguments: {
+        ...tool.arguments,
+        search_terms: ["boom", "bang"],
+        search_combinator: "And",
+      },
+    });
+    await cleanup();
+    return {
+      result,
+      text: (result.content as Array<{ type: "text"; text: string }>)[0].text,
+    };
+  }
+
+  it.each(logTools)(
+    "$name reports an empty failed search as no matches when the target exists",
+    async (tool) => {
+      const mockClient = makeMockClient();
+      vi.mocked(mockClient.read)
+        .mockResolvedValueOnce(log({ stage: "Get log grep", success: false }))
+        .mockResolvedValueOnce(log({ stdout: "last line\n" }));
+
+      const { result, text } = await callSearch(mockClient, tool);
+
+      expect(result.isError).toBeFalsy();
+      expect(text).toContain("[OK] Get log grep");
+      expect(text).toContain('No lines matched: "boom", "bang" (And)');
+      expect(text).not.toContain("last line");
+      expect(mockClient.read).toHaveBeenLastCalledWith(
+        tool.probeOp,
+        tool.probeParams,
+      );
+    },
+  );
+
+  it.each(logTools)(
+    "$name surfaces the probe error when the target does not exist",
+    async (tool) => {
+      const mockClient = makeMockClient();
+      vi.mocked(mockClient.read)
+        .mockResolvedValueOnce(log({ stage: "Get log grep", success: false }))
+        .mockResolvedValueOnce(
+          log({
+            success: false,
+            stderr: "Error response from daemon: No such container: web",
+          }),
+        );
+
+      const { text } = await callSearch(mockClient, tool);
+
+      expect(text).toContain("[FAILED]");
+      expect(text).toContain("No such container: web");
+      expect(text).not.toContain("No lines matched");
+    },
+  );
+
+  it.each(logTools)("$name returns matches without probing", async (tool) => {
+    const mockClient = makeMockClient();
+    vi.mocked(mockClient.read).mockResolvedValueOnce(
+      log({ stage: "Get log grep", stdout: "boom bang\n" }),
+    );
+
+    const { text } = await callSearch(mockClient, tool);
+
+    expect(text).toContain("[OK] Get log grep");
+    expect(text).toContain("boom bang");
+    expect(mockClient.read).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(logTools)(
+    "$name keeps a failed search with output as a failure without probing",
+    async (tool) => {
+      const mockClient = makeMockClient();
+      vi.mocked(mockClient.read).mockResolvedValueOnce(
+        log({ stage: "Get log grep", success: false, stderr: "grep: bad" }),
+      );
+
+      const { text } = await callSearch(mockClient, tool);
+
+      expect(text).toContain("[FAILED] Get log grep");
+      expect(text).toContain("grep: bad");
+      expect(mockClient.read).toHaveBeenCalledTimes(1);
+    },
+  );
+});
